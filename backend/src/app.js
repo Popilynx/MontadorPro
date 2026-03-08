@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
 const montadorRoutes = require('./routes/montadorRoutes');
@@ -27,6 +28,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/montadores', montadorRoutes);
 app.use('/api/os', osRoutes);
 app.use('/api/convites', conviteRoutes);
+
+// Servir arquivos estáticos do Frontend
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendPath));
+
+// Rota catch-all para SPA (React Router)
+// Importante: deve vir DEPOIS das rotas de API
+app.get('*', (req, res) => {
+    // Se a requisição começar com /api, não serve o index.html (já deveria ter sido tratada acima)
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ error: 'API route not found' });
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
 
 // Tratamento de erros global
 app.use((err, req, res, next) => {
