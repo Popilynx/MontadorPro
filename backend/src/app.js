@@ -16,13 +16,16 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            connectSrc: ["'self'", "https://fonts.googleapis.com", "https://fonts.gstatic.com", "https://*.supabase.co"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-            imgSrc: ["'self'", "data:", "blob:", "https://api.dicebear.com", "https://images.unsplash.com", "https://*.supabase.co"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            connectSrc: ["'self'", "https://*.supabase.co", "https://*.googleapis.com", "https://*.gstatic.com", "https://api.dicebear.com"],
+            fontSrc: ["'self'", "https://*.gstatic.com", "data:"],
+            imgSrc: ["'self'", "data:", "blob:", "https://*.unsplash.com", "https://api.dicebear.com", "https://*.supabase.co", "https://images.unsplash.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://*.googleapis.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
+            workerSrc: ["'self'", "blob:"],
+            frameSrc: ["'self'", "https://*.supabase.co"],
         },
     },
+    crossOriginEmbedderPolicy: false,
 }));
 app.use(cors({
     origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
