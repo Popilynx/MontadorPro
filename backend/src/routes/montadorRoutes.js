@@ -257,13 +257,13 @@ router.get('/historico', authMiddleware, async (req, res) => {
                AND EXTRACT(YEAR FROM data_agendamento) = $1
                AND ($2 OR (
                    montador_id = $3::int
-                   OR id IN (
-                       SELECT DISTINCT "ordemServicoId"::int FROM convites
-                       WHERE "montadorId"::int = $3::int AND status = 'ACEITO'
+                   OR id::text IN (
+                       SELECT DISTINCT "ordemServicoId" FROM convites
+                       WHERE "montadorId" = $3::text AND status = 'ACEITO'
                    )
                ))
              GROUP BY mes ORDER BY mes`,
-            [ano, isAdmin, req.montadorId]
+            [ano, isAdmin, req.montadorId?.toString()]
         );
 
         const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];

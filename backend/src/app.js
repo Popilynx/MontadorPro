@@ -18,7 +18,7 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             connectSrc: ["'self'", "https://*.supabase.co", "https://*.googleapis.com", "https://*.gstatic.com", "https://api.dicebear.com"],
             fontSrc: ["'self'", "https://*.gstatic.com", "data:"],
-            imgSrc: ["'self'", "data:", "blob:", "https://*.unsplash.com", "https://api.dicebear.com", "https://*.supabase.co", "https://images.unsplash.com"],
+            imgSrc: ["'self'", "data:", "blob:", "https://*.unsplash.com", "https://api.dicebear.com", "https://*.supabase.co", "https://images.unsplash.com", "https://*.tile.openstreetmap.org"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://*.googleapis.com"],
             scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "blob:"],
             workerSrc: ["'self'", "blob:"],
