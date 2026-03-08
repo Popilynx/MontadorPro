@@ -134,16 +134,16 @@ const Landing = () => {
     }, []);
 
     return (
-        <div ref={landingRef} className="bg-primary text-background min-h-screen relative font-sans overflow-x-hidden">
+        <div ref={landingRef} className="bg-primary text-white min-h-screen relative font-sans overflow-x-hidden">
             {/* Navbar */}
             <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-primary/80 backdrop-blur-xl border border-white/10 rounded-full px-8 py-4 flex items-center justify-between w-[90%] max-w-5xl shadow-2xl shadow-black/50 transition-all">
-                <div className="font-drama text-2xl font-bold italic tracking-wider text-background">Montador<span className="text-accent">Pro</span></div>
-                <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
+                <div className="font-drama text-2xl font-bold italic tracking-wider text-white">Montador<span className="text-accent">Pro</span></div>
+                <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide text-white/70">
                     <a href="#features" className="hover:text-accent transition-colors">Features</a>
                     <a href="#philosophy" className="hover:text-accent transition-colors">Manifesto</a>
                     <a href="#protocol" className="hover:text-accent transition-colors">Protocol</a>
                 </div>
-                <button onClick={() => navigate('/login')} className="btn-primary py-2 px-6 text-sm text-primary font-bold">
+                <button onClick={() => navigate('/login')} className="bg-accent hover:bg-accent-hover text-primary py-2 px-6 rounded-full text-sm font-bold transition-all">
                     Acessar Sistema
                 </button>
             </nav>
@@ -157,11 +157,11 @@ const Landing = () => {
                     <p className="hero-text text-accent font-mono uppercase tracking-[0.2em] mb-4 text-sm font-bold flex items-center gap-2">
                         <span className="w-8 h-[1px] bg-accent inline-block"></span> Sistema de Gestão Operacional
                     </p>
-                    <h1 className="hero-text text-5xl md:text-8xl font-sans font-bold text-background leading-[1.1] tracking-tight mb-2">
+                    <h1 className="hero-text text-5xl md:text-8xl font-sans font-bold text-white leading-[1.1] tracking-tight mb-2">
                         Gestão inteligente encontra a <br />
                         <span className="font-drama italic text-7xl md:text-9xl text-accent font-light block mt-4">Precisão.</span>
                     </h1>
-                    <p className="hero-text text-lg md:text-xl text-background/70 max-w-2xl mt-8 mb-10 font-light leading-relaxed">
+                    <p className="hero-text text-lg md:text-xl text-white/80 max-w-2xl mt-8 mb-10 font-light leading-relaxed">
                         A plataforma definitiva de gestão e tracking de montadores. Automatize agendamentos, monitore em tempo real e eleve a eficiência da sua operação.
                     </p>
                     <button onClick={() => navigate('/login')} className="hero-text btn-primary text-lg px-8 py-4">
@@ -175,14 +175,14 @@ const Landing = () => {
                 <div className="max-w-7xl mx-auto relative z-10">
                     <div className="mb-20 text-center">
                         <h2 className="text-sm font-mono text-accent uppercase tracking-widest mb-4">Artefatos Operacionais</h2>
-                        <h3 className="text-4xl md:text-6xl font-sans font-bold text-background tracking-tight">Instrumentos de Controle</h3>
+                        <h3 className="text-4xl md:text-6xl font-sans font-bold text-white tracking-tight">Instrumentos de Controle</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Card 1: Shuffler - Gestão em Tempo Real */}
                         <div className="bg-primary-dark/80 backdrop-blur-md rounded-[2rem] p-8 border border-white/5 shadow-2xl flex flex-col h-[400px]">
-                            <h4 className="font-sans font-bold text-2xl text-background mb-2">Gestão em Tempo Real</h4>
-                            <p className="text-background/60 text-sm mb-8">Tracking de montadores e status da frota ao vivo no mapa.</p>
+                            <h4 className="font-sans font-bold text-2xl text-white mb-2">Gestão em Tempo Real</h4>
+                            <p className="text-white/60 text-sm mb-8">Tracking de montadores e status da frota ao vivo no mapa.</p>
 
                             <div className="flex-1 relative w-full flex items-center justify-center overflow-hidden rounded-2xl border border-white/5 bg-black/50 mt-4">
                                 {/* Dark Map Background */}
@@ -204,7 +204,7 @@ const Landing = () => {
                                             <div className={`p-2 rounded-full ${item.bg} ${item.color}`}>
                                                 {item.icon}
                                             </div>
-                                            <span className="font-medium text-sm text-background">{item.label}</span>
+                                            <span className="font-medium text-sm text-white">{item.label}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -213,14 +213,14 @@ const Landing = () => {
 
                         {/* Card 2: Typewriter - Controle Completo */}
                         <div className="bg-primary-dark/80 backdrop-blur-md rounded-[2rem] p-8 border border-white/5 shadow-2xl flex flex-col h-[400px]">
-                            <h4 className="font-sans font-bold text-2xl text-background mb-2">Controle Completo</h4>
-                            <p className="text-background/60 text-sm mb-8">Auditoria de ponta a ponta e log de execução financeiro.</p>
+                            <h4 className="font-sans font-bold text-2xl text-white mb-2">Controle Completo</h4>
+                            <p className="text-white/60 text-sm mb-8">Auditoria de ponta a ponta e log de execução financeiro.</p>
 
                             <div className="flex-1 bg-black/80 rounded-2xl p-6 relative overflow-hidden flex flex-col border border-white/5 mt-4">
                                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-luminosity"></div>
                                 <div className="relative z-10 flex items-center gap-2 mb-4">
                                     <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                                    <span className="text-xs font-mono text-background/50 uppercase tracking-wider">Live Trace Feed</span>
+                                    <span className="text-xs font-mono text-white/50 uppercase tracking-wider">Live Trace Feed</span>
                                 </div>
                                 <p className="relative z-10 font-mono text-sm text-accent leading-relaxed mt-auto shadow-black drop-shadow-md">
                                     <span ref={typewriterRef}></span><span className="animate-pulse">_</span>
@@ -230,8 +230,8 @@ const Landing = () => {
 
                         {/* Card 3: Scheduler - Automação Operacional */}
                         <div className="bg-primary-dark/80 backdrop-blur-md rounded-[2rem] p-8 border border-white/5 shadow-2xl flex flex-col h-[400px]">
-                            <h4 className="font-sans font-bold text-2xl text-background mb-2">Automação</h4>
-                            <p className="text-background/60 text-sm mb-8">Roteirização e agendamentos inteligentes da sua operação.</p>
+                            <h4 className="font-sans font-bold text-2xl text-white mb-2">Automação</h4>
+                            <p className="text-white/60 text-sm mb-8">Roteirização e agendamentos inteligentes da sua operação.</p>
 
                             <div className="flex-1 border border-white/10 rounded-2xl p-4 relative bg-black/30 mt-4 overflow-hidden">
                                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-luminosity"></div>
@@ -244,7 +244,7 @@ const Landing = () => {
                                     ))}
                                 </div>
                                 {/* Mock SVG Cursor moving over */}
-                                <svg className="absolute top-1/2 left-1/2 -ml-2 -mt-4 w-6 h-6 text-background animate-[bounce_3s_ease-in-out_infinite] z-20 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+                                <svg className="absolute top-1/2 left-1/2 -ml-2 -mt-4 w-6 h-6 text-white animate-[bounce_3s_ease-in-out_infinite] z-20 drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M7 2l12 11.2-5.8.5 3.3 7.3-2.2.9-3.2-7.4-4.4 5z" />
                                 </svg>
                             </div>
@@ -258,10 +258,10 @@ const Landing = () => {
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
 
                 <div className="max-w-5xl mx-auto relative z-10 flex flex-col justify-center min-h-[50vh]">
-                    <p className="phil-text text-background/60 text-2xl md:text-4xl font-light mb-12 max-w-2xl leading-relaxed">
+                    <p className="phil-text text-white/60 text-2xl md:text-4xl font-light mb-12 max-w-2xl leading-relaxed">
                         A maioria do setor foca em processos <br className="hidden md:block" /> manuais e planilhas desorganizadas.
                     </p>
-                    <p className="phil-text text-background text-5xl md:text-8xl font-sans tracking-tight leading-[1.1]">
+                    <p className="phil-text text-white text-5xl md:text-8xl font-sans tracking-tight leading-[1.1]">
                         Nós focamos em <br />
                         <span className="font-drama italic text-accent font-light">controle absoluto.</span>
                     </p>
@@ -282,8 +282,8 @@ const Landing = () => {
                         </div>
                         <div className="flex-1">
                             <span className="font-mono text-accent text-sm tracking-widest uppercase block mb-4">FASE 01.</span>
-                            <h2 className="text-5xl font-sans font-bold text-background tracking-tight mb-6">Recebimento da OS</h2>
-                            <p className="text-background/70 text-lg font-light leading-relaxed">Integre seus pedidos e orçamentos num fluxo único. As ordens de serviço entram no sistema já formatadas para execução.</p>
+                            <h2 className="text-5xl font-sans font-bold text-white tracking-tight mb-6">Recebimento da OS</h2>
+                            <p className="text-white/70 text-lg font-light leading-relaxed">Integre seus pedidos e orçamentos num fluxo único. As ordens de serviço entram no sistema já formatadas para execução.</p>
                         </div>
                     </div>
                 </div>
@@ -306,8 +306,8 @@ const Landing = () => {
                         </div>
                         <div className="flex-1">
                             <span className="font-mono text-accent text-sm tracking-widest uppercase block mb-4">FASE 02.</span>
-                            <h2 className="text-5xl font-sans font-bold text-background tracking-tight mb-6">Roteirização Inteligente</h2>
-                            <p className="text-background/70 text-lg font-light leading-relaxed">O sistema identifica o melhor montador ativo no mapa e notifica proativamente. Minimizando tempo e distância de deslocamento.</p>
+                            <h2 className="text-5xl font-sans font-bold text-white tracking-tight mb-6">Roteirização Inteligente</h2>
+                            <p className="text-white/70 text-lg font-light leading-relaxed">O sistema identifica o melhor montador ativo no mapa e notifica proativamente. Minimizando tempo e distância de deslocamento.</p>
                         </div>
                     </div>
                 </div>
@@ -329,8 +329,8 @@ const Landing = () => {
                         </div>
                         <div className="flex-1">
                             <span className="font-mono text-accent text-sm tracking-widest uppercase block mb-4">FASE 03.</span>
-                            <h2 className="text-5xl font-sans font-bold text-background tracking-tight mb-6">Tracking Execução</h2>
-                            <p className="text-background/70 text-lg font-light leading-relaxed">Auditoria visual e fechamento em tempo real. O montador finaliza o serviço via app, gera faturamento e atualiza o seu dashboard.</p>
+                            <h2 className="text-5xl font-sans font-bold text-white tracking-tight mb-6">Tracking Execução</h2>
+                            <p className="text-white/70 text-lg font-light leading-relaxed">Auditoria visual e fechamento em tempo real. O montador finaliza o serviço via app, gera faturamento e atualiza o seu dashboard.</p>
                         </div>
                     </div>
                 </div>
@@ -339,7 +339,7 @@ const Landing = () => {
             {/* Pricing / Call to Action */}
             <section className="py-40 px-8 bg-primary-dark border-t border-white/5">
                 <div className="max-w-3xl mx-auto text-center">
-                    <h2 className="text-5xl md:text-7xl font-sans font-bold text-background leading-tight mb-8 tracking-tight">
+                    <h2 className="text-5xl md:text-7xl font-sans font-bold text-white leading-tight mb-8 tracking-tight">
                         Pronto para assumir o <span className="font-drama italic text-accent font-light">Controle</span>.
                     </h2>
                     <div className="flex justify-center mt-12">
@@ -354,8 +354,8 @@ const Landing = () => {
             <footer className="bg-primary pt-24 pb-12 px-8 rounded-t-[4rem]">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12">
                     <div>
-                        <div className="font-drama text-2xl font-bold italic tracking-wider text-background mb-4">Montador<span className="text-accent">Pro</span></div>
-                        <p className="text-background/50 font-light text-sm max-w-xs">A plataforma definitiva para gestão de alta performance operacional.</p>
+                        <div className="font-drama text-2xl font-bold italic tracking-wider text-white mb-4">Montador<span className="text-accent">Pro</span></div>
+                        <p className="text-white/50 font-light text-sm max-w-xs">A plataforma definitiva para gestão de alta performance operacional.</p>
 
                         <div className="mt-8 flex items-center gap-3">
                             <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
@@ -363,21 +363,21 @@ const Landing = () => {
                         </div>
                     </div>
                     <div className="flex gap-16 text-sm">
-                        <div className="flex flex-col gap-4 text-background/60">
-                            <span className="text-background font-mono font-bold tracking-widest uppercase text-xs mb-2">Plataforma</span>
+                        <div className="flex flex-col gap-4 text-white/60">
+                            <span className="text-white font-mono font-bold tracking-widest uppercase text-xs mb-2">Plataforma</span>
                             <a href="#" className="hover:text-accent transition-colors">Workspace</a>
                             <a href="#" className="hover:text-accent transition-colors">Integrações</a>
                             <a href="#" className="hover:text-accent transition-colors">Preços</a>
                         </div>
-                        <div className="flex flex-col gap-4 text-background/60">
-                            <span className="text-background font-mono font-bold tracking-widest uppercase text-xs mb-2">Firma</span>
+                        <div className="flex flex-col gap-4 text-white/60">
+                            <span className="text-white font-mono font-bold tracking-widest uppercase text-xs mb-2">Firma</span>
                             <a href="#" className="hover:text-accent transition-colors">Manifesto</a>
                             <a href="#" className="hover:text-accent transition-colors">Legal</a>
                             <a href="#" className="hover:text-accent transition-colors">Suporte</a>
                         </div>
                     </div>
                 </div>
-                <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-background/10 text-center md:text-left flex flex-col md:flex-row justify-between text-xs font-mono text-background/40">
+                <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-background/10 text-center md:text-left flex flex-col md:flex-row justify-between text-xs font-mono text-white/40">
                     <span>© 2026 MontadorPro Systems. All rights reserved.</span>
                     <span className="mt-4 md:mt-0 uppercase tracking-widest">Strictly Precision.</span>
                 </div>
