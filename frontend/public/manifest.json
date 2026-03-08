@@ -1,0 +1,21 @@
+{
+  "name": "Montador Pro",
+  "short_name": "MontadorPro",
+  "description": "Plataforma definitiva de gestão e tracking de montadores.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0d0d12",
+  "theme_color": "#0d0d12",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

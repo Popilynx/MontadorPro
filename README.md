@@ -1,47 +1,78 @@
-# Montador Pro - Guia de Desenvolvimento
+# Montador Pro — Plataforma de Gestão
 
-Este documento descreve o escopo completo e o guia de desenvolvimento do sistema **Montador Pro**, uma plataforma digital para gestão de montadores de móveis e ordens de serviço, estabelecendo a base para manutenções estruturais e refatoração premium.
+O Montador Pro é um SaaS completo para gerenciamento de Ordens de Serviço (OS) e Montadores de móveis, com sistema de convites em tempo real, dashboard de ganhos e arquitetura PWA (Progressive Web App).
 
-## 1. Visão Geral do Sistema
+## 🚀 Como Rodar o Projeto Localmente
 
-O Montador Pro é uma plataforma digital completa para gestão de montadores de móveis e ordens de serviço. O sistema conecta montadores autônomos à marcenaria, gerenciando todo o ciclo de vida de uma ordem de serviço — desde a criação e o envio do convite até a conclusão do serviço e avaliação do profissional.
+O projeto é dividido em duas partes principais: **Backend** (Node.js/Express) e **Frontend** (React/Vite). As duas devem rodar em terminais separados durante o desenvolvimento.
 
-### Objetivo Principal
-Digitalizar e automatizar o fluxo de trabalho de montadores de móveis, reduzindo a fricção operacional, garantindo a rastreabilidade dos serviços e fornecendo métricas em tempo real para gestores e montadores.
+### 1. Configurando o Banco de Dados (Supabase/PostgreSQL)
 
-### Componentes do Sistema
-| Componente | Tecnologia | Função |
-| :--- | :--- | :--- |
-| **Frontend PWA** | HTML5 / CSS3 / JavaScript | Aplicativo mobile instalável para montadores |
-| **Backend API** | Node.js + Express | API REST (auth, upload, push) |
-| **Banco de Dados** | PostgreSQL (Supabase) + Prisma | Persistência (usuários, OS, avaliações) |
-| **Service Worker** | Web Push API + Cache API | Notificações em background e app offline |
-| **Admin API** | Express | Painel de gestão (criar OS, gerir convites) |
+O sistema utiliza PostgreSQL. Recomendamos criar um projeto gratuito no [Supabase](https://supabase.com/).
 
-## 2. Fluxo Principal do Usuário
-1. Gestor cria uma OS via API administrativa.
-2. Administrador envia um convite para um montador (notificação push no celular).
-3. Montador tem 10 minutos (tempo limite configurável) para avaliar o convite pelo PWA.
-4. Ao aceitar o convite, o status atualiza a OS para 'em serviço'. É disparada a execução com acompanhamento em GPS (coordenadas).
-5. O profissional realiza o check-in na localidade, finaliza, envia fotos multi-part (progresso/conclusão) pelo app.
-6. A OS é dada como entregue. O backend consolida e registra métricas (+ avaliação e pagamento logístico fora da plataforma).
+1. Obtenha a URL de conexão (Connection String) do seu banco Supabase.
+2. Na pasta `/backend`, copie o arquivo `.env.example` para `.env` (ou crie um se não existir):
+   - `POSTGRES_POOL_URL="sua-url-aqui?pgbouncer=true"`
+   - `JWT_SECRET="alguma-chave-secreta"`
+   - `CORS_ORIGIN="http://localhost:5173"`
+3. Execute as migrações e popule o banco rodando:
+   ```bash
+   cd backend
+   node migrate.js
+   node seed.js
+   ```
 
-## 3. Arquitetura do Projeto
+### 2. Rodando o Backend (API)
 
-**Backend:**
-- Stack: `Node.js` e `Express`.
-- Database: `PostgreSQL` orquestrado com `Prisma ORM`.
-- Camadas vitais: Controllers de rotas de autorização (login com Auth `JWT` via refresh-tokens seguros rotativos e senhas `Bcryptjs`), gerenciamento de fotos `Multer`, limites e CORS `Express-rate-limit`, Validações input `Zod` e Segurança da Header `Helmet`.
+Abra um terminal e execute:
 
-**Frontend PWA (Vanilla/Premium):**
-- Arquitetura "Vanilla/SPA": Contido integralmente em `<index.html>` para isolamento de requisição pesada, rodando um Service Worker próprio em `sw.js`.
-- Premium Design System: Focado em layouts minimalistas, limpos, animações, tipografia Google Fonts fluída e acessível.
+```bash
+cd backend
+npm install
+npm run dev
+```
 
-**Infraestrutura e Deploy (Railway + Supabase):**
-- Plataforma Nuvem: Hospedagem da aplicação (Backend Node + Frontend estático Vanilla) focada no modelo SaaS utilizando o **Railway.app**.
-- Banco e Storage: O Banco de Dados PostgreSQL e o armazenamento de arquivos de mídia (fotos) serão provisionados no **Supabase** (BaaS), descentralizando o armazenamento e garantindo uma persistência externa altamente tolerante a reinicializações. O Express rodará como monolito conectado ao Supabase.
+*O backend iniciará na porta `3000` (`http://localhost:3000`).*
 
-## 4. Diretrizes de Desenvolvimento Premium
-* Modificação rigorosamente orientada ao desenvolvimento **Premium** da UI/UX no aplicativo PWA.
-* Desenvolvimento visual com *Glassmorphism*, gradientes orgânicos, inputs float e botões modernos animados, sem depender de pacotes grandes de layout como *Tailwind* por padrão (foco em HTML/CSS Puro com extrema customização visual e paleta dark/clean em CSS Variables).
-* Segurança atrelada ao fluxo da API. Preocupação redobrada em transações unificadas e rotas admin restritas (`X-Admin-Token`).
+### 3. Rodando o Frontend (Painel Web e PWA)
+
+Abra um segundo terminal e execute:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+*O frontend iniciará na porta `5173`. Acesse `http://localhost:5173` no seu navegador.*
+
+---
+
+## 🔐 Acessos de Teste (Mock)
+
+Ao rodar o `seed.js`, os seguintes usuários são criados para teste. A senha padrão para todos é `senha123`:
+
+- **Administrador:** Não há painel admin construído neste escopo, a gestão de OS é via banco original, mas o acesso para visualização de OS é global.
+- **Montador 1:** CPF: `111.111.111-11`, Senha: `senha123`
+- **Montador 2:** CPF: `222.222.222-22`, Senha: `senha123`
+
+---
+
+## 🧪 Rodando os Testes Unitários
+
+O backend conta com uma suíte de testes unitários para validar todos os endpoints vitais (Auth, OS, Convites e Histórico).
+
+Para rodar os testes, vá no terminal do backend:
+
+```bash
+cd backend
+npm test
+```
+
+Os testes utilizam `Jest` e `Supertest`, simulando o banco de dados (mock) para garantir execução rápida e segura sem sujar dados de produção.
+
+---
+
+## 📦 Deploy para Produção
+
+O projeto está configurado para deploy imediato no **Railway** como um monolito, ou separando Front/Back na **Vercel/Railway**. Leia o arquivo `DEPLOY.md` para instruções detalhadas sobre variáveis de ambiente e comandos de build final.

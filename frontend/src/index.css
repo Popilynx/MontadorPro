@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600;1,700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0D0D12;
+  --color-primary-light: #2A2A35;
+  --color-primary-dark: #050508;
+  --color-accent: #C9A84C;
+  --color-accent-hover: #b59238;
+  --color-background: #FAF8F5;
+
+  --font-sans: "Inter", sans-serif;
+  --font-drama: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+.dark {
+  --color-primary: #050508;
+  --color-primary-light: #E0E0E0;
+  --color-primary-dark: #000000;
+  --color-background: #0D0D12;
+  
+  /* Ajuste de cards no modo dark */
+  .settings-card, .bg-white {
+    background-color: #16161E !important;
+    border-color: rgba(255, 255, 255, 0.05);
+    color: #FAF8F5 !important;
+    
+    h3, h4, span, p {
+        color: #FAF8F5 !important;
+    }
+  }
+
+  .text-primary {
+    color: #FAF8F5 !important;
+  }
+
+  /* Global fixes for accessibility in dark mode */
+  input, textarea, select {
+    color: #FAF8F5 !important;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: rgba(250, 248, 245, 0.4) !important;
+  }
+
+  /* Specific fix for inputs with bg-white/5 or similar */
+  .bg-white\/5, .bg-white\/10 {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-primary-light);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+}
+
+@layer components {
+
+  /* Utilitários Genéricos já migrados para serem substituídos ou atualizados gradativamente */
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-xl shadow-primary/5;
+  }
+
+  /* Botão Base "Magnético" */
+  .btn-magnetic {
+    @apply relative overflow-hidden flex items-center justify-center gap-2 rounded-[2rem] px-6 py-3 font-medium transition-all duration-500 active:scale-95;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .btn-magnetic:hover {
+    transform: scale(1.03) translateY(-1px);
+  }
+
+  .btn-primary {
+    @apply relative overflow-hidden flex items-center justify-center gap-2 rounded-[2rem] px-6 py-3 font-medium transition-all duration-500 active:scale-95 bg-accent text-primary font-bold shadow-lg shadow-accent/20 hover:shadow-accent/40;
+    transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+}
+
+/* Noise Overlay Global */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}

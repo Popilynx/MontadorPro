@@ -1,0 +1,4 @@
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres.tzeptxmiiunpqcyxmbgt:liquigas1417@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+}

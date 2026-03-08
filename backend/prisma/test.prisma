@@ -1,0 +1,12 @@
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres.tzeptxmiiunpqcyxmbgt:4EgwC1z9bS0xclb9@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Test {
+  id Int @id @default(autoincrement())
+}
