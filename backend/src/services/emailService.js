@@ -9,28 +9,51 @@ const sendVerificationEmail = async (email, nome, code) => {
     
     // Na versão gratuita, se o usuário ainda não configurou o domínio, 
     // o 'from' deve ser onboarding@resend.dev
-    const fromEmail = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+    // Se configurou, usamos o e-mail oficial
+    const fromEmail = process.env.EMAIL_FROM || 'Convite@nfmoveisplanejados.com.br';
+    const finalFrom = fromEmail.includes('@nfmoveisplanejados.com.br') 
+        ? `NF Móveis Planejados <${fromEmail}>` 
+        : `MontadorPro <onboarding@resend.dev>`;
 
     if (!resend) {
         console.warn('RESEND_API_KEY não configurada. E-mail de verificação não enviado para:', email);
-        console.log('Código de verificação:', code);
         return { id: 'mock-id', message: 'Modo desenvolvimento: chave não configurada' };
     }
 
     return resend.emails.send({
-        from: `MontadorPro <${fromEmail}>`,
+        from: finalFrom,
         to: [email],
-        subject: 'Bem-vindo ao MontadorPro! Confirme seu e-mail',
+        subject: '🚀 Bem-vindo à NF Móveis! Ative sua conta de Montador',
         html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e1e1; border-radius: 10px;">
-                <h2 style="color: #C9A84C;">Bem-vindo, ${nome}!</h2>
-                <p>Obrigado por se juntar à nossa equipe de profissionais MontadorPro.</p>
-                <p>Para ativar sua conta e começar a receber ordens de serviço, clique no botão abaixo:</p>
-                <a href="${activationLink}" style="display: inline-block; padding: 12px 24px; background-color: #C9A84C; color: #1e1e1e; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">Ativar Minha Conta</a>
-                <p style="margin-top: 20px; font-size: 0.9em; color: #666;">Se o botão não funcionar, copie e cole este link no seu navegador:</p>
-                <p style="font-size: 0.8em; color: #C9A84C;">${activationLink}</p>
-                <p style="margin-top: 20px; border-top: 1px solid #eee; pt: 10px;">Seu código de verificação é: <strong>${code}</strong></p>
-                <p style="font-size: 12px; color: #999; margin-top: 20px;">Você recebeu este e-mail porque foi cadastrado como montador no sistema MontadorPro.</p>
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #ffffff; color: #1a1a1a; border-radius: 16px; border: 1px solid #f0f0f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #C9A84C; font-size: 28px; font-weight: bold; margin: 0; letter-spacing: -1px;">Montador<span style="color: #1a1a1a;">Pro</span></h1>
+                    <p style="color: #666; font-size: 14px; margin-top: 5px;">Powered by NF Móveis Planejados</p>
+                </div>
+                
+                <h2 style="color: #1a1a1a; font-size: 22px; margin-bottom: 10px;">Olá, ${nome}!</h2>
+                <p style="font-size: 16px; line-height: 1.6; color: #444;">Você foi convidado para fazer parte da nossa rede de profissionais de montagem. Para começar a receber suas ordens de serviço e gerenciar sua agenda, ative sua conta abaixo:</p>
+                
+                <div style="text-align: center; margin: 35px 0;">
+                    <a href="${activationLink}" style="display: inline-block; padding: 16px 36px; background-color: #C9A84C; color: #ffffff; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; transition: background-color 0.3s ease;">Ativar Minha Conta Profissional</a>
+                </div>
+
+                <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                    <p style="margin: 0; font-size: 14px; color: #666; text-align: center;">Seu código de confirmação rápida:</p>
+                    <p style="margin: 10px 0 0; font-size: 32px; font-weight: bold; color: #C9A84C; letter-spacing: 8px; text-align: center;">${code}</p>
+                </div>
+
+                <p style="font-size: 13px; color: #999; line-height: 1.5; text-align: center;">
+                    Caso o botão não funcione, copie e cole este link no seu navegador:<br>
+                    <a href="${activationLink}" style="color: #C9A84C; word-break: break-all;">${activationLink}</a>
+                </p>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0 20px;">
+                
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
+                    © 2026 NF Móveis Planejados. Todos os direitos reservados.<br>
+                    Este é um e-mail automático, por favor não responda.
+                </p>
             </div>
         `,
     });
