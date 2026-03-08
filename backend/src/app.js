@@ -35,8 +35,8 @@ app.use(express.static(frontendPath));
 
 // Rota catch-all para SPA (React Router)
 // Importante: deve vir DEPOIS das rotas de API
-app.get('*', (req, res) => {
-    // Se a requisição começar com /api, não serve o index.html (já deveria ter sido tratada acima)
+app.use((req, res, next) => {
+    // Se a requisição começar com /api, não serve o index.html (já deveria ter sido tratada e retornado 404)
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'API route not found' });
     }
