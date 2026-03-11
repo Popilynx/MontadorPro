@@ -68,6 +68,22 @@ Garantir o fluxo e o comportamento de carga por todo o ciclo de vida do Front (M
 - [x] **TSK-6.2:** Depurar e corrigir visualização de montadores no mapa (coordenadas reais).
 - [x] **TSK-6.3:** Implementar Página de Perfil (`Profile.jsx`) com:
   - [x] Upload de foto funcional (Correção de conflito de rotas e tipo de ID).
+  - [x] Refactor Backend to Prisma
+    [x] Replace Supabase SDK with Prisma Client operations
+    [x] Update all routes for API v1 compliance
+    [x] Implement auto-dispatch and geo-location logic
+    [x] Setup Multer for photo uploads
+  [x] Integrate Resend Email Service
+  [x] Configure Push Notifications (VAPID)
+  [/] Adapt Frontend to New API
+    [ ] Update Axios base URL and API paths
+    [ ] Refactor Auth logic to handle refresh tokens
+    [ ] Update Dashboard components to use v1 endpoints
+    [ ] Implement photo upload in Mobile App
+  [ ] Deployment Readiness
+    [ ] Setup Railway environment variables
+    [ ] Final verification of PostgreSQL on Supabase
+    [ ] Production build of Frontend
   - [x] **Verification**
     - [x] Test profile update without wiping other fields
     - [x] Verify photo persistence

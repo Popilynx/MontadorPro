@@ -1,78 +1,83 @@
-# Montador Pro — Plataforma de Gestão
+# NF Móveis — Montador Pro v1.0 🏠✨
 
-O Montador Pro é um SaaS completo para gerenciamento de Ordens de Serviço (OS) e Montadores de móveis, com sistema de convites em tempo real, dashboard de ganhos e arquitetura PWA (Progressive Web App).
+Plataforma digital completa para gestão de serviços de montagem e instalação de móveis planejados. Este sistema automatiza todo o ciclo de vida das ordens de serviço (OS), desde a criação no escritório até a execução e avaliação em campo.
 
-## 🚀 Como Rodar o Projeto Localmente
+---
 
-O projeto é dividido em duas partes principais: **Backend** (Node.js/Express) e **Frontend** (React/Vite). As duas devem rodar em terminais separados durante o desenvolvimento.
+## 🏗️ Estrutura do Ecossistema
 
-### 1. Configurando o Banco de Dados (Supabase/PostgreSQL)
+- **🌐 Landing Page (NF Móveis)**: Site institucional para clientes finais, otimizado para SEO com animações premium (GSAP).
+- **📱 App do Montador (PWA)**: Aplicativo instalável para profissionais em campo com tracking GPS e fluxo de execução.
+- **🔧 Painel Administrativo**: Pronta-o-usuário (Admin) para o escritório gerir OS, montadores e faturamento histórico.
+- **⚙️ API Backend**: Servidor robusto em Node.js com Prisma ORM e PostgreSQL, centralizando toda a lógica e notificações.
 
-O sistema utiliza PostgreSQL. Recomendamos criar um projeto gratuito no [Supabase](https://supabase.com/).
+---
 
-1. Obtenha a URL de conexão (Connection String) do seu banco Supabase.
-2. Na pasta `/backend`, copie o arquivo `.env.example` para `.env` (ou crie um se não existir):
-   - `POSTGRES_POOL_URL="sua-url-aqui?pgbouncer=true"`
-   - `JWT_SECRET="alguma-chave-secreta"`
-   - `CORS_ORIGIN="http://localhost:5173"`
-3. Execute as migrações e popule o banco rodando:
-   ```bash
-   cd backend
-   node migrate.js
-   node seed.js
+## 🌟 Funcionalidades Principais
+
+### 1. Para o Administrador (Escritório)
+- **Dashboard em Tempo Real**: Mapa interativo (Leaflet) com localização dos montadores (polling de 30s).
+- **Gestão de OS**:
+  - Criação de OS com geocodificação automática (OpenStreetMap).
+  - **Despacho Automático**: Cálculo de distância (Haversine) e envio de convites para os 3 montadores mais próximos.
+- **Controle de Equipe**: Aprovação de novos cadastros, desativação de profissionais e visualização de "Dossier".
+- **Histórico Financeiro Global**: Gráficos e tabelas de faturamento mensal e anual agrupado.
+- **Avaliação de Qualidade**: Sistema de nota (1-5 estrelas) que recalcula a média do montador automaticamente.
+- **Push Broadcast**: Envio de notificações para toda a base de montadores ativos.
+
+### 2. Para o Montador (Campo)
+- **Instalação PWA**: Funciona como um app nativo no celular, sem necessidade de loja de aplicativos.
+- **Sistema de Convites**:
+  - Recebimento de convites via Push e **WhatsApp**.
+  - Timer de 20 minutos para aceite/recusa.
+- **Fluxo de Execução**:
+  - **Check-in Inteligente**: Confirmação de chegada validada via GPS (raio 200m) e Janela de Tempo (±15 min do agendado).
+  - **Relatório Fotográfico**: Upload obrigatório de no mínimo 4 fotos das etapas do serviço.
+  - **Check-out**: Finalização do serviço com registro de horário e liberação para pagamento.
+- **Perfil & Ganhos**: Gestão de dados pessoais, chave PIX e dashboard de faturamento pessoal.
+
+---
+
+## 🛠️ Stack Tecnológica
+
+- **Frontend**: React.js, Vite, TailwindCSS (ou Vanilla CSS), GSAP, Lucide React, Leaflet (Mapas).
+- **Backend**: Node.js, Express.js.
+- **Banco de Dados**: PostgreSQL com **Prisma ORM**.
+- **Comunicação**:
+  - Notificações Push: VAPID / Web-Push.
+  - E-mails: **Resend**.
+  - SMS/WhatsApp: Links formatados `wa.me`.
+- **Infraestrutura**: Railway (Deploy), GitHub (CI/CD).
+
+---
+
+## 🚀 Como Rodar o Projeto
+
+### Pré-requisitos
+- Node.js (v18+)
+- Banco de Dados PostgreSQL (Recomendado: Supabase)
+
+### 1. Configurando o Backend
+1. Entre na pasta `/backend`: `cd backend`
+2. Instale as dependências: `npm install`
+3. Configure o arquivo `.env`:
+   ```env
+   DATABASE_URL="sua-url-prisma-postgresql"
+   JWT_SECRET="chave-secreta"
+   ADMIN_SECRET="secret-para-header-admin"
+   RESEND_API_KEY="re_..."
+   VAPID_PUBLIC_KEY="..."
+   VAPID_PRIVATE_KEY="..."
+   APP_URL="http://localhost:5173"
    ```
+4. Sincronize o banco de dados: `npx prisma db push`
+5. Rode o servidor: `npm run dev`
 
-### 2. Rodando o Backend (API)
-
-Abra um terminal e execute:
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-*O backend iniciará na porta `3000` (`http://localhost:3000`).*
-
-### 3. Rodando o Frontend (Painel Web e PWA)
-
-Abra um segundo terminal e execute:
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-*O frontend iniciará na porta `5173`. Acesse `http://localhost:5173` no seu navegador.*
-
+### 2. Configurando o Frontend
+1. Entre na pasta `/frontend`: `cd frontend`
+2. Instale as dependências: `npm install`
+3. Rode o aplicativo: `npm run dev`
+4. Acesse em: `http://localhost:5173`
 ---
 
-## 🔐 Acessos de Teste (Mock)
-
-Ao rodar o `seed.js`, os seguintes usuários são criados para teste. A senha padrão para todos é `senha123`:
-
-- **Administrador:** Não há painel admin construído neste escopo, a gestão de OS é via banco original, mas o acesso para visualização de OS é global.
-- **Montador 1:** CPF: `111.111.111-11`, Senha: `senha123`
-- **Montador 2:** CPF: `222.222.222-22`, Senha: `senha123`
-
----
-
-## 🧪 Rodando os Testes Unitários
-
-O backend conta com uma suíte de testes unitários para validar todos os endpoints vitais (Auth, OS, Convites e Histórico).
-
-Para rodar os testes, vá no terminal do backend:
-
-```bash
-cd backend
-npm test
-```
-
-Os testes utilizam `Jest` e `Supertest`, simulando o banco de dados (mock) para garantir execução rápida e segura sem sujar dados de produção.
-
----
-
-## 📦 Deploy para Produção
-
-O projeto está configurado para deploy imediato no **Railway** como um monolito, ou separando Front/Back na **Vercel/Railway**. Leia o arquivo `DEPLOY.md` para instruções detalhadas sobre variáveis de ambiente e comandos de build final.
+© 2026 **NF Móveis Planejados** • Desenvolvido com Antigravity Intelligence.

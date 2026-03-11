@@ -16,7 +16,7 @@ const EditMontadorModal = ({ montador, onClose, onUpdate }) => {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.patch(`/montadores/${montador.id}`, formData);
+            await api.patch(`/admin/montadores/${montador.id}`, formData);
             onUpdate();
             onClose();
         } catch (err) {

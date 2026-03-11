@@ -1,0 +1,459 @@
+NF MÓVEIS PLANEJADOS
+
+Montador
+Pro
+
+Documentação Informativa do Sistema
+
+Plataforma digital para gestão de serviços de
+montagem e instalação de móveis planejados
+🌐
+Landing Page
+Site para clientes
+📱
+App Montadores
+PWA para campo
+🔧
+Painel Admin
+Gestão do escritório
+⚙️
+API Backend
+Node.js + PostgreSQL
+
+Versão 1.0   •   2026   •   Goiás, Brasil
+
+Sumário
+
+
+
+1. Visão Geral
+O Montador Pro é uma plataforma digital completa criada para a NF Móveis Planejados — empresa de marcenaria e instalação de móveis planejados com atuação em Goiás. O sistema digitaliza e automatiza todo o processo que vai desde a criação de uma ordem de serviço no escritório até a conclusão e avaliação da instalação pelo montador em campo.
+A plataforma é composta por quatro módulos integrados que se comunicam por meio de uma API central:
+
+🌐
+
+Landing Page
+
+Site institucional da NF Móveis. Apresenta serviços ao cliente final e serve como porta de entrada para o app dos montadores.
+📱
+
+App do Montador
+
+PWA instalável no celular. Recebe convites, registra chegada com GPS, envia fotos e finaliza serviços em campo.
+🔧
+
+Painel Admin
+
+Dashboard web para o escritório. Cria OS, localiza montadores por raio, aprova cadastros e acompanha execuções.
+⚙️
+
+API Backend
+
+Servidor Node.js com banco PostgreSQL. Centraliza autenticação, lógica de negócio, push notifications e armazenamento.
+
+🎯
+Objetivo: eliminar a alocação manual de montadores, reduzir o tempo entre a abertura de uma OS e o início da execução, e garantir rastreabilidade completa de cada instalação — do convite ao montador até a avaliação final.
+
+2. Fluxo de Operação
+Cada serviço percorre um ciclo completo de 8 etapas, desde a criação da OS no escritório até a avaliação final:
+
+#
+Etapa
+O que acontece
+1
+🗂️  Criação da OS
+O admin preenche o formulário no painel: nome e contato do cliente, endereço da obra, tipo de projeto, valor do montador e data agendada.
+2
+📍  Geolocalização
+O sistema geocodifica o endereço automaticamente e calcula a distância de todos os montadores ativos pelo algoritmo de Haversine.
+3
+📨  Envio de Convites
+Os 3 montadores mais próximos dentro do raio configurado recebem convite simultâneo via push notification e link de WhatsApp. Prazo: 20 minutos.
+4
+✅  Aceite
+O montador aceita pelo app. A transação é atômica no banco — apenas um montador pode aceitar cada OS, evitando conflito.
+5
+📍  Chegada
+No local, o montador toca "Confirmar Chegada". O backend valida a posição GPS (raio de 200 m) e o horário (±15 min do agendado).
+6
+📸  Fotos
+O montador fotografa mínimo 4 etapas obrigatórias: Antes, Durante, Detalhe e Finalizado. As fotos são enviadas para o servidor em tempo real.
+7
+🏁  Finalização
+O montador finaliza o serviço pelo app. O sistema valida as fotos, registra a hora de conclusão e libera o processo de pagamento.
+8
+⭐  Avaliação
+O admin avalia o serviço (1–5 estrelas). A nota média do montador é recalculada automaticamente, influenciando a prioridade em futuros convites.
+
+
+3. Módulos do Sistema
+3.1  Landing Page — NF Móveis
+Site público institucional que apresenta a empresa ao cliente final. Totalmente responsivo, otimizado para SEO e com botão direto para WhatsApp. Também contém um banner para acesso ao app dos montadores parceiros.
+
+Seção
+Conteúdo
+Hero / Início
+Slogan, apresentação da empresa e chamada para orçamento
+Materiais
+Catálogo visual de acabamentos: MDF, laminados, madeiramentos
+Serviços
+Tipos de projeto: cozinha, quarto, escritório, apartamento completo
+Diferenciais
+Qualidade, prazo e garantia — motivos para escolher a NF Móveis
+Contato
+Formulário de contato e botão WhatsApp da empresa
+Banner Montador Pro
+Link para o app e área de acesso dos montadores parceiros
+
+3.2  App do Montador (PWA)
+Aplicativo web progressivo (Progressive Web App) que pode ser instalado no celular como aplicativo nativo, sem precisar de App Store ou Play Store. Funciona em qualquer smartphone com navegador moderno. Design dark theme, otimizado para uso em campo.
+
+Tela
+Funcionalidade
+Login
+Autenticação por telefone + senha com JWT. Refresh automático de sessão. Modo demo offline para testes.
+Home
+Painel com saldo do mês, total de OS concluídas, nota média e convite ativo com timer regressivo.
+Convites
+Recebe convites em tempo real via push notification. Exibe valor, endereço, distância e timer de expiração (20 min). Aceitar ou recusar.
+Execução
+Acompanha o serviço ativo: confirmação de chegada com GPS, upload de fotos obrigatórias e botão de finalização.
+Fotos
+Grid de 6 posições para registro fotográfico da instalação. Mínimo 4 fotos exigidas pelo sistema. Câmera direta do celular.
+Histórico
+Lista completa de serviços realizados com valor, endereço, data e avaliação recebida.
+Perfil
+Dados pessoais, chave PIX, nota média, status de disponibilidade e configuração de notificações push.
+
+3.3  Painel Administrativo
+Interface web exclusiva para a equipe da NF Móveis. Permite gerir todo o ciclo de vida dos serviços e dos montadores parceiros. Acesso protegido por chave secreta de administrador.
+
+Aba
+Funcionalidade
+Pendentes
+Lista montadores aguardando aprovação de cadastro. Badge com contador. Botões Aprovar e Rejeitar.
+Aprovados
+Montadores ativos na plataforma. Alterna disponibilidade e permite desativação temporária.
+Rejeitados
+Montadores desativados ou recusados, com opção de reativação.
+Ordens de Serviço
+Histórico completo de OS com status, cliente, montador, valor e data.
+Nova OS
+Formulário de criação com geocodificação automática, seletor de raio, busca dos 3 montadores mais próximos e geração de links de convite no WhatsApp.
+
+
+4. Funcionalidades Técnicas
+4.1  Geolocalização e Despacho Automático
+Ao criar uma OS, o sistema executa três operações em sequência:
+Geocodificação do endereço da obra via OpenStreetMap Nominatim (gratuito, sem API key)
+Cálculo de distância por Fórmula de Haversine entre a obra e o GPS registrado de cada montador
+Ordenação por proximidade e seleção dos 3 mais próximos dentro do raio (10 / 20 / 30 / 50 / 100 km)
+
+📍
+Os convites são enviados simultaneamente para os 3 montadores. O primeiro a aceitar "trava" a OS via transação atômica no PostgreSQL — garantindo que não haja duplo aceite.
+
+4.2  Push Notifications (VAPID)
+O sistema usa o protocolo Web Push com criptografia VAPID para enviar notificações ao dispositivo do montador mesmo com o app fechado, sem custo e sem Firebase. Os eventos notificados são:
+Novo convite de serviço — instantâneo, com valor e endereço da obra
+Broadcast do admin — mensagem personalizada para todos os montadores ativos
+
+4.3  Autenticação e Segurança
+
+Mecanismo
+Como funciona
+JWT Access Token
+Tokens de curta duração (15 min). Cada requisição autenticada deve enviar no header Authorization.
+JWT Refresh Token
+Token de 30 dias. Renova automaticamente o access token sem exigir novo login.
+bcrypt (rounds: 12)
+Hashing das senhas com custo alto — resiste a ataques de força bruta e rainbow tables.
+Rate Limiting
+Limite de tentativas por IP — previne ataques de enumeração de senhas e DDoS.
+Erro genérico no login
+Retorna sempre a mesma mensagem para senha errada ou usuário inexistente (timing-safe).
+x-admin-secret
+Header especial separado da auth dos montadores — isola completamente o acesso administrativo.
+
+4.4  Validação de Chegada com GPS
+Quando o montador toca "Confirmar Chegada", o backend realiza duas validações simultâneas:
+Janela de tempo: o montador deve estar dentro de ±15 minutos do horário agendado
+Raio geográfico: a coordenada GPS do celular deve estar a menos de 200 metros da obra
+
+⚠️
+Ambas as validações ocorrem exclusivamente no backend — não no app — prevenindo adulteração das coordenadas ou do horário pelo dispositivo do usuário.
+
+
+5. Stack Tecnológica
+
+Camada
+Tecnologia
+Finalidade
+Frontend
+HTML + CSS + JS puro
+PWA e landing sem frameworks pesados — carrega rápido em 3G
+Backend
+Node.js 20 + Express
+API REST com roteamento, middlewares e tratamento centralizado de erros
+ORM
+Prisma 5
+Migrations, type-safety e queries ao banco de dados
+Banco
+PostgreSQL 16
+Armazenamento relacional de montadores, OS, execuções e fotos
+Auth
+JWT + bcryptjs
+Tokens stateless e hashing seguro de senhas
+Push
+VAPID + web-push
+Notificações nativas no celular sem app nativo na loja
+E-mail
+Resend SDK
+E-mails transacionais: convites, aprovações e confirmações
+Upload
+Multer + disco
+Recebe e armazena fotos dos serviços (até 5 MB por foto)
+Proxy/Static
+Nginx
+Serve o frontend, redireciona /api/ ao backend e gerencia SSL
+Deploy
+Railway
+CI/CD automático pelo GitHub, banco gerenciado e HTTPS gratuito
+Container
+Docker + Compose
+Ambiente reproduzível idêntico em dev e produção
+Validação
+Zod
+Schema validation rigoroso de todos os inputs da API
+Logging
+Winston + Morgan
+Logs estruturados de requisições e erros em produção
+
+6. Estrutura do Banco de Dados
+O banco PostgreSQL é gerenciado pelo Prisma ORM e estruturado em 9 tabelas relacionais:
+
+Tabela
+Campos principais
+Função
+montadores
+nome, telefone, senhaHash, pixChave, notaMedia, status, lat, lng
+Cadastro e perfil de cada montador parceiro
+refresh_tokens
+token, montadorId, expiresAt, revokedAt
+Controle de sessões e revogação de tokens
+push_subscriptions
+endpoint, p256dh, auth, montadorId
+Dados de inscrição VAPID para push notifications
+clientes
+nome, telefone, email
+Clientes da NF Móveis criados ao abrir OS
+ordens_servico
+numero, descricao, endereco, lat, lng, valorBruto, status, dataInstalacao
+Núcleo do sistema — ciclo completo do serviço
+convites
+ordemId, montadorId, status, expiresAt, respondidoAt
+Convites com controle de expiração e resposta
+execucoes
+ordemId, montadorId, status, chegadaAt, latChegada, conclusaoAt
+Registro da execução do aceite à conclusão
+fotos
+execucaoId, url, tipo
+Fotos enviadas pelo montador durante o serviço
+avaliacoes
+ordemId, montadorId, nota, comentario
+Avaliações de 1 a 5 estrelas de cada serviço
+
+
+7. Endpoints da API
+Todos os endpoints são prefixados com /api/v1/. Endpoints marcados como JWT exigem o header Authorization: Bearer <token>.
+
+Autenticação
+Método
+Rota
+Auth
+Descrição
+POST
+/auth/login
+Público
+Login telefone + senha — retorna access + refresh tokens
+POST
+/auth/logout
+JWT
+Invalida o refresh token no banco
+POST
+/auth/refresh
+Público
+Renova o access token pelo refresh token
+
+Montador — Perfil
+Método
+Rota
+Auth
+Descrição
+GET
+/montadores/me
+JWT
+Perfil completo do montador autenticado
+GET
+/montadores/me/stats
+JWT
+Ganhos do mês, total de OS e nota média
+GET
+/montadores/me/historico
+JWT
+Lista paginada de serviços concluídos
+PATCH
+/montadores/me/status
+JWT
+Altera disponibilidade (disponivel / indisponivel)
+PATCH
+/montadores/me/localizacao
+JWT
+Atualiza coordenadas GPS do montador
+
+Convites
+Método
+Rota
+Auth
+Descrição
+GET
+/convites/ativo
+JWT
+Retorna convite pendente atual (se houver)
+POST
+/convites/:id/aceitar
+JWT
+Aceita o convite — transação atômica
+POST
+/convites/:id/recusar
+JWT
+Recusa o convite
+
+Execução
+Método
+Rota
+Auth
+Descrição
+GET
+/execucao/ativa
+JWT
+Execução ativa com dados da OS e fotos enviadas
+POST
+/execucao/chegada
+JWT
+Confirma chegada com validação de GPS e horário
+POST
+/execucao/:id/fotos
+JWT
+Upload de fotos (multipart/form-data)
+POST
+/execucao/:id/finalizar
+JWT
+Finaliza o serviço validando mínimo de fotos
+
+Admin
+Método
+Rota
+Auth
+Descrição
+GET
+/admin/stats
+Admin
+Dashboard: totais de montadores, OS e receita
+GET
+/admin/montadores
+Admin
+Lista todos os montadores com coordenadas
+POST
+/admin/montadores
+Admin
+Cria montador com senha criptografada
+PATCH
+/admin/montadores/:id
+Admin
+Ativa, desativa, aprova ou rejeita montador
+GET
+/admin/ordens
+Admin
+Lista OS com filtro por status
+POST
+/admin/ordens
+Admin
+Cria nova OS (cliente, endereço, valor, data)
+POST
+/admin/convites
+Admin
+Envia convite manual para montador específico
+GET
+/admin/execucoes
+Admin
+Lista execuções com fotos e dados do montador
+POST
+/admin/avaliacoes
+Admin
+Avalia serviço e recalcula nota média
+POST
+/admin/push/broadcast
+Admin
+Push notification para todos os montadores ativos
+
+
+8. Infraestrutura e Deploy
+8.1  Arquitetura de Produção
+O sistema roda em três camadas, todas orquestradas pelo Docker Compose e provisionadas no Railway:
+
+                   Internet (usuário / montador)
+                          |
+             ┌────────────▼──────────────┐
+             │       NGINX  (porta 80)    │
+             │  /        → index.html     │
+             │  /app/    → app.html       │
+             │  /admin/  → admin-v2.html  │
+             │  /api/    → proxy :3000    │
+             └────────────┬──────────────┘
+                          |
+             ┌────────────▼──────────────┐
+             │  Node.js Backend  :3000   │
+             │  Express + Prisma + JWT   │
+             └────────────┬──────────────┘
+                          |
+             ┌────────────▼──────────────┐
+             │   PostgreSQL  :5432       │
+             └───────────────────────────┘
+
+8.2  Railway
+Plataforma cloud usada para deploy do backend e banco de dados. A cada push no GitHub, um novo deploy é iniciado automaticamente. Recursos incluídos:
+PostgreSQL gerenciado com backups automáticos e variável DATABASE_URL injetada diretamente
+HTTPS automático no domínio *.up.railway.app com certificado SSL gratuito
+Logs em tempo real, métricas de uso e terminal de acesso ao container
+Variáveis de ambiente seguras — nunca expostas no código-fonte ou repositório
+
+8.3  Resend (E-mail)
+Serviço de e-mail transacional usado para notificações automáticas: convites de serviço, confirmação de aprovação do montador e avisos de OS concluída. Plano gratuito inclui 3.000 e-mails/mês.
+
+9. Acessos e Credenciais de Teste
+
+Interface
+Credencial de Demo
+URL
+App Montador (PWA)
+Telefone: (62) 9 8844-1212
+Senha: demo123
+/app/
+Painel Admin V2
+E-mail: (qualquer)
+Senha: ADMIN_SECRET
+/admin-v2.html
+Painel Admin V1
+Secret Key: ADMIN_SECRET do .env
+/admin/
+Landing Page
+— (acesso público)
+/
+API Health Check
+— (acesso público)
+/health
+
+💡
+O modo demo do App Montador funciona inteiramente sem backend — simula todo o fluxo do montador com dados fictícios. Ideal para apresentações e treinamento da equipe.
+
+NF Móveis Planejados  •  Montador Pro v1.0  •  Goiás, Brasil  •  2026

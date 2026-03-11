@@ -92,7 +92,7 @@ const Historico = () => {
             setLoading(true);
             setErro(null); // Clear previous errors
             try {
-                const { data } = await api.get(`/montadores/historico?ano=${anoSelecionado}`);
+                const { data } = await api.get(`/admin/historico?ano=${anoSelecionado}`);
                 setDados(data);
             } catch (err) {
                 console.error('Erro ao buscar histórico:', err);

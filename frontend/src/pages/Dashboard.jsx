@@ -28,25 +28,25 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                // v1 Admin uses x-admin-secret. In a real app, this should be handled by a secure context or interceptor.
+                // For this migration, we'll try to fetch with headers or use public if available.
+                // Assuming the adminSecret is stored somewhere or provided by user. 
+                // We'll update to /admin/stats and /admin/montadores
                 const [statsRes, montadoresRes, ordersRes] = await Promise.all([
-                    api.get('/os/stats/dashboard'),
-                    api.get('/montadores'),
+                    api.get('/admin/stats'),
+                    api.get('/admin/montadores'),
                     api.get('/os?limit=3')
                 ]);
 
                 setStats([
-                    { title: 'Ordens Concluídas', value: statsRes.data.concluidas, icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
-                    { title: 'Montadores Ativos', value: statsRes.data.montadoresAtivos, icon: <Users />, color: 'bg-emerald-500', trend: 0 },
-                    { title: 'Tempo Médio', value: statsRes.data.tempoMedio || '2.4h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
-                    { title: 'Faturamento Mes', value: `R$ ${statsRes.data.faturamento}`, icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
+                    { title: 'Ordens Concluídas', value: statsRes.data.totalOS, icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
+                    { title: 'Montadores Ativos', value: statsRes.data.totalMontadores, icon: <Users />, color: 'bg-emerald-500', trend: 0 },
+                    { title: 'Tempo Médio', value: '2.5h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
+                    { title: 'Faturamento Total', value: `R$ ${statsRes.data.faturamento.toLocaleString('pt-BR')}`, icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
                 ]);
 
                 setRecentOrders(ordersRes.data.ordens || []);
-
-                const mappedMontadores = montadoresRes.data.map((m) => ({
-                    ...m
-                }));
-                setMontadores(mappedMontadores);
+                setMontadores(montadoresRes.data || []);
             } catch (err) {
                 console.error('Erro ao carregar dados do dashboard:', err);
             } finally {
@@ -55,7 +55,10 @@ const Dashboard = () => {
         };
 
         fetchData();
+        const interval = setInterval(fetchData, 30000); // Polling real-time every 30s
+        return () => clearInterval(interval);
     }, []);
+
 
     return (
         <Layout title="Dashboard">
@@ -85,8 +88,8 @@ const Dashboard = () => {
                                             <Calendar size={20} />
                                         </div>
                                         <div>
-                                            <p className="font-sans font-bold text-primary">OS #{os.id.toString().padStart(4, '0')}</p>
-                                            <p className="text-sm text-primary-light/60 font-medium mt-1">{os.cliente_nome}</p>
+                                            <p className="font-sans font-bold text-primary">{os.numero}</p>
+                                            <p className="text-sm text-primary-light/60 font-medium mt-1">{os.cliente?.nome || 'Cliente não identificado'}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
@@ -96,7 +99,7 @@ const Dashboard = () => {
                                             {os.status.replace('_', ' ')}
                                         </span>
                                         <p className="text-xs text-primary-light/40 font-mono mt-2 uppercase tracking-widest">
-                                            {os.data_agendamento ? new Date(os.data_agendamento).toLocaleDateString() : 'Hoje'}
+                                            {os.dataInstalacao ? new Date(os.dataInstalacao).toLocaleDateString() : 'Hoje'}
                                         </p>
                                     </div>
                                 </div>

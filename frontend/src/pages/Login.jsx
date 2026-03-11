@@ -15,7 +15,7 @@ const Login = () => {
         setError('');
 
         try {
-            const response = await api.post('/auth/login', { telefone, senha });
+            const response = await api.post('/auth/login', { telefone, password: senha });
             const { accessToken, montador } = response.data;
 
             localStorage.setItem('accessToken', accessToken);

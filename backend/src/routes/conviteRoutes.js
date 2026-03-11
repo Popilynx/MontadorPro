@@ -1,93 +1,141 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
+const prisma = require('../config/db');
 const authMiddleware = require('../middlewares/authMiddleware');
 const logger = require('../utils/logger');
 
-// ─── GET /api/convites — Convites do montador logado ─────────────────────
-router.get('/', authMiddleware, async (req, res) => {
+// ─── GET /api/v1/convites/ativo — Retorna convite pendente atual ────────
+router.get('/ativo', authMiddleware, async (req, res) => {
     try {
-        const result = await db.query(
-            `SELECT c.id, c."ordemServicoId", c."montadorId", c.status, c."expiracaoAt",
-                    o.cliente_nome, o.endereco, o.valor, o.data_agendamento
-             FROM convites c
-             JOIN ordens_servico o ON c."ordemServicoId"::integer = o.id
-             WHERE c."montadorId"::integer = $1 AND c.status = 'PENDENTE' AND c."expiracaoAt" > NOW()
-             ORDER BY c."createdAt" DESC`,
-            [req.montadorId]
-        );
-        res.json(result.rows);
+        const convite = await prisma.convite.findFirst({
+            where: {
+                montadorId: parseInt(req.montadorId),
+                status: 'pendente',
+                expiresAt: { gt: new Date() }
+            },
+            include: { ordem: { include: { cliente: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        if (!convite) return res.json(null);
+
+        res.json({
+            id: convite.id,
+            ordemId: convite.ordemId,
+            cliente_nome: convite.ordem.cliente?.nome,
+            endereco: convite.ordem.endereco,
+            valor: convite.ordem.valorBruto,
+            descricao: convite.ordem.descricao,
+            expiracaoAt: convite.expiresAt
+        });
     } catch (err) {
-        logger.error(`[Convites] Erro GET /: ${err.message}`);
-        res.status(500).json({ error: 'Erro ao buscar convites' });
+        res.status(500).json({ error: 'Erro ao buscar convite ativo' });
     }
 });
 
-// ─── GET /api/convites/:id ──────────────────────────────────────────────
-router.get('/:id', authMiddleware, async (req, res) => {
+// ─── POST /api/v1/convites/:id/aceitar ───────────────────────────────────
+router.post('/:id/aceitar', authMiddleware, async (req, res) => {
     try {
-        const result = await db.query(
-            `SELECT c.*, o.cliente_nome, o.endereco, o.valor, o.data_agendamento
-             FROM convites c
-             JOIN ordens_servico o ON c."ordemServicoId"::integer = o.id
-             WHERE c.id = $1`,
-            [req.params.id]
-        );
-        if (!result.rows[0]) return res.status(404).json({ error: 'Convite não encontrado' });
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: 'Erro ao buscar convite' });
-    }
-});
+        const convite = await prisma.convite.findUnique({
+            where: { id: parseInt(req.params.id) }
+        });
 
-// ─── POST /api/convites/:id/responder ───────────────────────────────────
-router.post('/:id/responder', authMiddleware, async (req, res) => {
-    const { acao } = req.body;
-    if (!['ACEITAR', 'RECUSAR'].includes(acao)) {
-        return res.status(400).json({ error: 'Ação inválida. Use ACEITAR ou RECUSAR.' });
-    }
-    try {
-        const conviteRes = await db.query('SELECT * FROM convites WHERE id = $1', [req.params.id]);
-        const convite = conviteRes.rows[0];
-        if (!convite) return res.status(404).json({ error: 'Convite não encontrado' });
-        if (Number(convite.montadorId) !== req.montadorId) return res.status(403).json({ error: 'Sem permissão' });
-        if (convite.status !== 'PENDENTE') return res.status(400).json({ error: 'Convite já respondido' });
-
-        const novoStatus = acao === 'ACEITAR' ? 'ACEITO' : 'RECUSADO';
-        await db.query('UPDATE convites SET status = $1 WHERE id = $2', [novoStatus, req.params.id]);
-
-        if (acao === 'ACEITAR') {
-            await db.query(
-                "UPDATE ordens_servico SET status = 'ACEITA', montador_id = $1 WHERE id = $2",
-                [req.montadorId, Number(convite.ordemServicoId)]
-            );
-            logger.info(`[Transação Crítica] Convite ACEITO | OS:${convite.ordemServicoId} | Montador:${req.montadorId}`);
-        } else {
-            logger.info(`[Transação Crítica] Convite RECUSADO | OS:${convite.ordemServicoId} | Montador:${req.montadorId}`);
+        if (!convite || convite.montadorId !== parseInt(req.montadorId)) {
+            return res.status(404).json({ error: 'Convite não encontrado' });
         }
 
-        res.json({ message: `Convite ${novoStatus.toLowerCase()} com sucesso.` });
+        await prisma.$transaction(async (tx) => {
+             // Marcar convite como aceito
+             await tx.convite.update({
+                 where: { id: parseInt(req.params.id) },
+                 data: { status: 'aceito', respondidoAt: new Date() }
+             });
+
+             // Bloquear OS
+             const os = await tx.ordemServico.findUnique({ where: { id: convite.ordemId } });
+             if (os.status !== 'pendente') throw new Error('OS_ALREADY_TAKEN');
+
+             await tx.ordemServico.update({
+                 where: { id: convite.ordemId },
+                 data: { status: 'aceita', montadorId: parseInt(req.montadorId) }
+             });
+
+             // Criar Execução
+             await tx.execucao.create({
+                 data: {
+                     ordemId: convite.ordemId,
+                     montadorId: parseInt(req.montadorId),
+                     status: 'em_andamento'
+                 }
+             });
+        });
+
+        res.json({ message: 'Serviço aceito com sucesso!' });
     } catch (err) {
-        logger.error(`[Transação Crítica] Erro ao responder convite ${req.params.id}: ${err.message}`);
-        res.status(500).json({ error: 'Erro ao responder convite' });
+        if (err.message === 'OS_ALREADY_TAKEN') return res.status(400).json({ error: 'Já aceito por outro.' });
+        res.status(500).json({ error: 'Erro ao aceitar convite' });
     }
 });
+
+// ─── POST /api/v1/convites/:id/recusar ───────────────────────────────────
+router.post('/:id/recusar', authMiddleware, async (req, res) => {
+    try {
+        await prisma.convite.update({
+            where: { id: parseInt(req.params.id), montadorId: parseInt(req.montadorId) },
+            data: { status: 'recusado', respondidoAt: new Date() }
+        });
+        res.json({ message: 'Convite recusado.' });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao recusar convite' });
+    }
+});
+
 
 // ─── POST /api/convites/:id/finalizar ───────────────────────────────────
 router.post('/:id/finalizar', authMiddleware, async (req, res) => {
+    // Isso deve idealmente ir para o execução route, mas mantendo a compatibilidade do frontend
     const { nota, observacao } = req.body;
     try {
-        const conviteRes = await db.query('SELECT * FROM convites WHERE id = $1', [req.params.id]);
-        const convite = conviteRes.rows[0];
+        const convite = await prisma.convite.findUnique({
+            where: { id: parseInt(req.params.id) },
+            include: {
+        ordem: { include: { cliente: true } },
+        fotos: true
+      }
+        });
+        
         if (!convite) return res.status(404).json({ error: 'Convite não encontrado' });
 
-        await db.query(
-            "UPDATE ordens_servico SET status = 'CONCLUIDA', montador_id = COALESCE(montador_id, $2) WHERE id = $1",
-            [Number(convite.ordemServicoId), req.montadorId]
-        );
+        await prisma.$transaction(async (tx) => {
+             await tx.ordemServico.update({
+                 where: { id: convite.ordemId },
+                 data: {
+                     status: 'concluida'
+                 }
+             });
 
-        logger.info(`[Transação Crítica] Serviço FINALIZADO | OS:${convite.ordemServicoId} | Montador:${req.montadorId} | Nota:${nota}`);
-        res.json({ message: 'OS finalizada com sucesso!', valor: convite.valor });
+             await tx.execucao.updateMany({
+                 where: { ordemId: convite.ordemId, montadorId: parseInt(req.montadorId) },
+                 data: {
+                     status: 'concluida',
+                     conclusaoAt: new Date()
+                 }
+             });
+
+             if (nota) {
+                 await tx.avaliacao.create({
+                     data: {
+                         ordemId: convite.ordemId,
+                         montadorId: parseInt(req.montadorId),
+                         nota: Number(nota),
+                         comentario: observacao
+                     }
+                 });
+             }
+        });
+
+        logger.info(`[Transação Crítica] Serviço FINALIZADO | OS:${convite.ordemId} | Montador:${req.montadorId} | Nota:${nota}`);
+        res.json({ message: 'OS finalizada com sucesso!', valor: convite.ordem.valorBruto });
     } catch (err) {
         logger.error(`[Transação Crítica] Erro ao finalizar OS ${req.params.id}: ${err.message}`);
         res.status(500).json({ error: 'Erro ao finalizar OS' });

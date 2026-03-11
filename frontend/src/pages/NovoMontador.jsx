@@ -24,7 +24,7 @@ const NovoMontador = () => {
         setErro(null);
 
         try {
-            await api.post('/montadores', formData);
+            await api.post('/admin/montadores', formData);
             setSucesso(true);
         } catch (err) {
             console.error('Erro ao cadastrar montador:', err);

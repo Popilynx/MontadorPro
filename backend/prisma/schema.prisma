@@ -1,4 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
-  provider = "postgresql"
-  url      = "postgresql://postgres.tzeptxmiiunpqcyxmbgt:liquigas1417@aws-1-us-east-2.pooler.supabase.com:5432/postgres"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Montador {
+  id                 Int                 @id @default(autoincrement())
+  nome               String
+  telefone           String?             @unique
+  senhaHash          String?             @map("password")
+  pixChave           String?
+  notaMedia          Float?              @default(5.0) @map("rating")
+  status             String?             @default("disponivel")
+  cpf                String?
+  cidade             String?
+  lat                Float?
+  lng                Float?
+  email              String?
+  codigoVerificacao  String?
+  role               String              @default("montador")
+  fotoUrl            String?             @map("foto_url")
+  emailVerificado    Boolean             @default(false)
+  createdAt          DateTime?           @default(now())
+  updatedAt          DateTime?           @updatedAt
+
+  refreshTokens      RefreshToken[]
+  pushSubscriptions  PushSubscription[]
+  ordens             OrdemServico[]
+  convites           Convite[]
+  execucoes          Execucao[]
+  avaliacoes         Avaliacao[]
+
+  @@map("montador")
+}
+
+model RefreshToken {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique
+  montadorId Int
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  montador   Montador  @relation(fields: [montadorId], references: [id], onDelete: Cascade)
+
+  @@index([montadorId])
+  @@map("refresh_tokens")
+}
+
+model PushSubscription {
+  id         Int       @id @default(autoincrement())
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  montadorId Int
+  createdAt  DateTime  @default(now())
+
+  montador   Montador  @relation(fields: [montadorId], references: [id], onDelete: Cascade)
+
+  @@index([montadorId])
+  @@map("push_subscriptions")
+}
+
+model Cliente {
+  id        Int       @id @default(autoincrement())
+  nome      String
+  telefone  String
+  email     String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  ordens    OrdemServico[]
+
+  @@map("clientes")
+}
+
+model OrdemServico {
+  id             Int         @id @default(autoincrement())
+  numero         String?     @unique
+  descricao      String
+  endereco       String
+  lat            Float
+  lng            Float
+  valorBruto     Float
+  status         String?     @default("pendente")
+  dataInstalacao DateTime
+  clienteId      Int
+  montadorId     Int?
+  createdAt      DateTime?   @default(now())
+  updatedAt      DateTime?   @updatedAt
+
+  cliente        Cliente     @relation(fields: [clienteId], references: [id])
+  montador       Montador?   @relation(fields: [montadorId], references: [id])
+
+  convites       Convite[]
+  execucoes      Execucao[]
+  avaliacoes     Avaliacao[]
+
+  @@index([clienteId])
+  @@index([montadorId])
+  @@map("ordens_servico")
+}
+
+model Convite {
+  id           Int          @id @default(autoincrement())
+  ordemId      Int
+  montadorId   Int
+  status       String?      @default("pendente")
+  expiresAt    DateTime
+  respondidoAt DateTime?
+  createdAt    DateTime?    @default(now())
+
+  ordem        OrdemServico @relation(fields: [ordemId], references: [id], onDelete: Cascade)
+  montador     Montador     @relation(fields: [montadorId], references: [id], onDelete: Cascade)
+
+  @@index([ordemId])
+  @@index([montadorId])
+  @@map("convites")
+}
+
+model Execucao {
+  id          Int          @id @default(autoincrement())
+  ordemId     Int
+  montadorId  Int
+  status      String?      @default("em_andamento")
+  chegadaAt   DateTime?
+  latChegada  Float?
+  lngChegada  Float?
+  conclusaoAt DateTime?
+  createdAt   DateTime?    @default(now())
+
+  ordem       OrdemServico @relation(fields: [ordemId], references: [id], onDelete: Cascade)
+  montador    Montador     @relation(fields: [montadorId], references: [id], onDelete: Cascade)
+
+  fotos       Foto[]
+
+  @@index([ordemId])
+  @@index([montadorId])
+  @@map("execucoes")
+}
+
+model Foto {
+  id          Int      @id @default(autoincrement())
+  execucaoId  Int
+  url         String
+  tipo        String
+  createdAt   DateTime? @default(now())
+
+  execucao    Execucao @relation(fields: [execucaoId], references: [id], onDelete: Cascade)
+
+  @@index([execucaoId])
+  @@map("fotos")
+}
+
+model Avaliacao {
+  id          Int          @id @default(autoincrement())
+  ordemId     Int
+  montadorId  Int
+  nota        Float
+  comentario  String?
+  createdAt   DateTime?    @default(now())
+
+  ordem       OrdemServico @relation(fields: [ordemId], references: [id], onDelete: Cascade)
+  montador    Montador     @relation(fields: [montadorId], references: [id], onDelete: Cascade)
+
+  @@index([ordemId])
+  @@index([montadorId])
+  @@map("avaliacoes")
 }

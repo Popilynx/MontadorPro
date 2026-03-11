@@ -155,14 +155,14 @@ const Landing = () => {
 
                 <div className="relative z-10 max-w-4xl">
                     <p className="hero-text text-accent font-mono uppercase tracking-[0.2em] mb-4 text-sm font-bold flex items-center gap-2">
-                        <span className="w-8 h-[1px] bg-accent inline-block"></span> Sistema de Gestão Operacional
+                        <span className="w-8 h-[1px] bg-accent inline-block"></span> A Marcenaria que encontra a
                     </p>
                     <h1 className="hero-text text-5xl md:text-8xl font-sans font-bold text-white leading-[1.1] tracking-tight mb-2">
-                        Gestão inteligente encontra a <br />
-                        <span className="font-drama italic text-7xl md:text-9xl text-accent font-light block mt-4">Precisão.</span>
+                        A Marcenaria que encontra a <br />
+                        <span className="font-drama italic text-7xl md:text-9xl text-accent font-light block mt-4">Perfeição.</span>
                     </h1>
                     <p className="hero-text text-lg md:text-xl text-white/80 max-w-2xl mt-8 mb-10 font-light leading-relaxed">
-                        A plataforma definitiva de gestão e tracking de montadores. Automatize agendamentos, monitore em tempo real e eleve a eficiência da sua operação.
+                        Móveis sob medida com qualidade premium em Goiás. Do projeto 3D à instalação final, transformamos seu ambiente com exclusividade.
                     </p>
                     <button onClick={() => navigate('/login')} className="hero-text btn-primary text-lg px-8 py-4">
                         Experimente Agora

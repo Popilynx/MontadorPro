@@ -19,8 +19,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     const isAdmin = user?.role === 'admin';
 
     const allMenuItems = [
-        { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard', adminOnly: false },
-        { icon: <ClipboardList size={20} />, label: 'Ordens de Serviço', path: '/ordens', adminOnly: true },
+        { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard', adminOnly: true },
+        { icon: <ClipboardList size={20} />, label: 'Ordens de Serviço', path: '/ordens', adminOnly: false },
         { icon: <Users size={20} />, label: 'Montadores', path: '/montadores', adminOnly: true },
         { icon: <Bell size={20} />, label: 'Convite Ativo', path: '/convite', adminOnly: false },
         { icon: <TrendingUp size={20} />, label: 'Histórico de Faturamento', path: '/historico', adminOnly: true },
@@ -48,7 +48,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
             <div className="p-8 flex items-center justify-between gap-3">
-                <div className="font-drama text-2xl font-bold italic tracking-wider text-background">
+                <div className="font-drama text-2xl font-bold italic tracking-wider text-accent">
                     Montador<span className="text-accent">Pro</span>
                 </div>
                 <button 

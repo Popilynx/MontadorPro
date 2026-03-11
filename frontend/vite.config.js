@@ -8,4 +8,22 @@ export default defineConfig({
     tailwindcss(),
     react()
   ],
+  server: {
+    port: 5173,
+    strictPort: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+    },
+  },
 })

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia de Deploy — Railway + Resend · Montador Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --petroleo:#004d4d; --pet2:#006060;
+  --amber:#C5A059;
+  --green:#27AE60; --red:#C0392B; --blue:#2980B9;
+  --railway:#7C3AED; --resend:#000;
+  --bg:#F8F7F4; --white:#fff;
+  --t1:#1A1A1A; --t2:#555; --t3:#999;
+  --brd:#E5E4E0;
+  --fn:'Syne',sans-serif; --fb:'DM Sans',sans-serif; --fm:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--bg);font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--fb);color:var(--t1);line-height:1.7}
+
+/* ── COVER ── */
+.cover{
+  background:var(--petroleo);
+  color:#fff;
+  padding:60px 48px 48px;
+  position:relative;
+  overflow:hidden;
+}
+.cover::after{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 0%, rgba(197,160,89,.25) 0%, transparent 60%);
+  pointer-events:none;
+}
+.cover-tag{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.5;margin-bottom:16px}
+.cover-title{font-family:var(--fn);font-size:42px;font-weight:800;line-height:1.1;margin-bottom:12px;letter-spacing:-.02em}
+.cover-title span{color:var(--amber)}
+.cover-sub{font-size:15px;opacity:.7;max-width:520px;line-height:1.6;margin-bottom:32px}
+.cover-badges{display:flex;gap:10px;flex-wrap:wrap}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:20px;
+  font-size:12px;font-weight:600;letter-spacing:.03em;
+  border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);
+}
+
+/* ── LAYOUT ── */
+.container{max-width:860px;margin:0 auto;padding:48px 32px}
+
+/* ── TOC ── */
+.toc{
+  background:var(--white);
+  border:1px solid var(--brd);
+  border-radius:16px;
+  padding:28px 32px;
+  margin-bottom:48px;
+  box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
+.toc-title{font-family:var(--fn);font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:14px}
+.toc ol{padding-left:20px}
+.toc li{margin-bottom:6px}
+.toc a{color:var(--petroleo);font-weight:500;font-size:14px;text-decoration:none}
+.toc a:hover{text-decoration:underline}
+
+/* ── SECTIONS ── */
+.section{margin-bottom:56px}
+.section-num{
+  font-family:var(--fn);font-size:11px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:8px;
+}
+h2{font-family:var(--fn);font-size:26px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+h3{font-family:var(--fn);font-size:17px;font-weight:700;margin:28px 0 12px;letter-spacing:-.01em}
+p{margin-bottom:14px;color:var(--t2)}
+p strong{color:var(--t1)}
+ul,ol{padding-left:22px;margin-bottom:14px;color:var(--t2)}
+li{margin-bottom:6px}
+
+/* ── DIVIDER ── */
+.div{height:1px;background:var(--brd);margin:0 0 40px}
+
+/* ── CODE BLOCKS ── */
+pre{
+  background:#0F1117;
+  color:#E2E8F0;
+  border-radius:12px;
+  padding:20px 22px;
+  font-family:var(--fm);
+  font-size:13px;
+  line-height:1.65;
+  overflow-x:auto;
+  margin:16px 0 20px;
+  position:relative;
+}
+pre .cmt{color:#64748B}
+pre .key{color:#7DD3FC}
+pre .str{color:#86EFAC}
+pre .val{color:#FCA5A5}
+pre .cmd{color:#F0ABFC}
+pre .sec{color:#FCD34D;font-weight:600}
+code{font-family:var(--fm);background:#EEECEA;color:var(--petroleo);padding:2px 6px;border-radius:5px;font-size:13px}
+
+/* ── STEP BLOCKS ── */
+.steps{counter-reset:step}
+.step{
+  display:flex;gap:20px;margin-bottom:28px;
+  padding-bottom:28px;
+  border-bottom:1px solid var(--brd);
+}
+.step:last-child{border-bottom:none;padding-bottom:0}
+.step-num{
+  counter-increment:step;
+  width:36px;height:36px;
+  background:var(--petroleo);color:#fff;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--fn);font-size:14px;font-weight:800;
+  flex-shrink:0;margin-top:2px;
+}
+.step-body{flex:1}
+.step-title{font-family:var(--fn);font-size:15px;font-weight:700;margin-bottom:8px}
+
+/* ── CALLOUTS ── */
+.callout{
+  border-radius:12px;
+  padding:16px 20px;
+  margin:16px 0 20px;
+  display:flex;gap:12px;
+  font-size:14px;
+  line-height:1.6;
+}
+.callout-i{font-size:20px;flex-shrink:0;margin-top:-1px}
+.callout.tip{background:#EFF9F0;border:1px solid #A9DFBF;color:#1D6A35}
+.callout.warn{background:#FEF9E7;border:1px solid #F9E79F;color:#7D6608}
+.callout.info{background:#EAF4FB;border:1px solid #AED6F1;color:#1A5276}
+.callout.danger{background:#FDEDEC;border:1px solid #F1948A;color:#922B21}
+
+/* ── ENV TABLE ── */
+.env-table{width:100%;border-collapse:collapse;margin:16px 0 20px;font-size:14px}
+.env-table th{
+  background:var(--petroleo);color:#fff;
+  padding:10px 14px;text-align:left;
+  font-family:var(--fn);font-size:12px;letter-spacing:.05em;font-weight:700;
+}
+.env-table td{padding:11px 14px;border-bottom:1px solid var(--brd);vertical-align:top}
+.env-table tr:last-child td{border-bottom:none}
+.env-table tr:nth-child(even) td{background:var(--bg)}
+.env-table td:first-child{font-family:var(--fm);font-size:12px;color:var(--petroleo);white-space:nowrap}
+.req{color:var(--red);font-weight:700;font-size:11px}
+.opt{color:var(--t3);font-size:11px}
+
+/* ── PLATFORM HEADER ── */
+.plat-header{
+  display:flex;align-items:center;gap:14px;
+  background:var(--white);border:1px solid var(--brd);border-radius:14px;
+  padding:16px 20px;margin-bottom:24px;
+}
+.plat-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+}
+.plat-icon.railway{background:#F3EEFF}
+.plat-icon.resend{background:#F0F0F0}
+.plat-name{font-family:var(--fn);font-size:16px;font-weight:800}
+.plat-sub{font-size:12px;color:var(--t3);margin-top:2px}
+.plat-link{margin-left:auto;font-size:12px;color:var(--petroleo);font-weight:600;text-decoration:none;border:1px solid var(--brd);border-radius:8px;padding:6px 12px}
+.plat-link:hover{background:var(--bg)}
+
+/* ── TAG PILL ── */
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-right:4px}
+.tag.grn{background:#EAFAF1;color:#196F3D}
+.tag.red{background:#FDEDEC;color:#922B21}
+.tag.blu{background:#EAF4FB;color:#1A5276}
+.tag.amb{background:#FEF9E7;color:#9A7D0A}
+
+/* ── CHECKLIST ── */
+.checklist{list-style:none;padding:0;margin:12px 0 20px}
+.checklist li{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:8px 12px;border-radius:8px;
+  margin-bottom:6px;font-size:14px;
+}
+.checklist li:hover{background:var(--bg)}
+.checklist li::before{content:'☐';font-size:16px;flex-shrink:0;margin-top:1px}
+
+/* ── FOOTER ── */
+footer{background:var(--petroleo);color:rgba(255,255,255,.5);text-align:center;padding:24px;font-size:13px;margin-top:64px}
+footer strong{color:rgba(255,255,255,.8)}
+</style>
+</head>
+<body>
+
+<!-- ══ COVER ══ -->
+<div class="cover">
+  <div class="cover-tag">Montador Pro · NF Móveis Planejados</div>
+  <div class="cover-title">Deploy no <span>Railway</span><br>+ Email com Resend</div>
+  <div class="cover-sub">Guia passo a passo para colocar o backend em produção no Railway, configurar o PostgreSQL e integrar o serviço de e-mail Resend ao sistema.</div>
+  <div class="cover-badges">
+    <span class="badge">🚂 Railway</span>
+    <span class="badge">📧 Resend</span>
+    <span class="badge">🐘 PostgreSQL</span>
+    <span class="badge">Node.js 20</span>
+    <span class="badge">Prisma ORM</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ══ TOC ══ -->
+  <div class="toc">
+    <div class="toc-title">Índice</div>
+    <ol>
+      <li><a href="#railway">Parte 1 — Deploy no Railway</a></li>
+      <li><a href="#postgres">Parte 2 — PostgreSQL no Railway</a></li>
+      <li><a href="#env">Parte 3 — Variáveis de Ambiente</a></li>
+      <li><a href="#resend">Parte 4 — Configurar o Resend</a></li>
+      <li><a href="#integracao">Parte 5 — Integrar Resend ao Backend</a></li>
+      <li><a href="#checklist">Checklist Final</a></li>
+    </ol>
+  </div>
+
+  <!-- ══ PARTE 1: RAILWAY ══ -->
+  <div class="section" id="railway">
+    <div class="section-num">Parte 1</div>
+    <h2>Deploy no Railway</h2>
+    <p>O Railway detecta automaticamente projetos Node.js com <code>Dockerfile</code> e já possui PostgreSQL nativo. Não precisa de configuração de servidor.</p>
+
+    <div class="plat-header">
+      <div class="plat-icon railway">🚂</div>
+      <div>
+        <div class="plat-name">Railway</div>
+        <div class="plat-sub">railway.com · Plano gratuito disponível (Hobby: $5/mês para produção)</div>
+      </div>
+      <a class="plat-link" href="https://railway.com" target="_blank">Acessar →</a>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Criar conta no Railway</div>
+          <p>Acesse <strong>railway.com</strong> e clique em <strong>Start a New Project</strong>. Faça login com sua conta GitHub — isso vai permitir deploy automático a cada <code>git push</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Criar novo projeto e subir o repositório</div>
+          <p>No painel do Railway, clique em <strong>New Project → Deploy from GitHub repo</strong>. Selecione o repositório do Montador Pro.</p>
+          <div class="callout info">
+            <span class="callout-i">💡</span>
+            <span>Se o projeto ainda não está no GitHub, crie um repositório e faça push da pasta <code>backend/</code>. O Railway detecta o <code>Dockerfile</code> automaticamente.</span>
+          </div>
+          <pre><span class="cmt"># Na pasta backend do projeto:</span>
+git init
+git add .
+git commit -m "chore: initial commit"
+git remote add origin https://github.com/SEU_USER/montador-pro-api.git
+git push -u origin main</pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Configurar o Root Directory</div>
+          <p>Se o repositório contém a pasta <code>backend/</code> e <code>frontend/</code> juntos, é necessário informar ao Railway qual é a pasta do backend:</p>
+          <p>No Railway → seu serviço → <strong>Settings → Source → Root Directory</strong><br>Digite: <code>backend</code></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Gerar domínio público</div>
+          <p>Após o build concluir, vá em:<br>
+          <strong>Seu serviço → Settings → Networking → Generate Domain</strong></p>
+          <p>Você receberá uma URL no formato:<br>
+          <code>https://montador-pro-api-production.up.railway.app</code></p>
+          <div class="callout tip">
+            <span class="callout-i">✅</span>
+            <span>Esta é a URL base da sua API. Use-a nas variáveis de ambiente do frontend (<code>CFG.API</code> no <code>app.html</code>) e nos outros serviços.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ══ PARTE 2: POSTGRESQL ══ -->
+  <div class="section" id="postgres">
+    <div class="section-num">Parte 2</div>
+    <h2>PostgreSQL no Railway</h2>
+    <p>O Railway oferece PostgreSQL gerenciado com backups automáticos. É a forma mais simples de ter um banco em produção.</p>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Adicionar banco de dados ao projeto</div>
+          <p>No canvas do Railway, clique em <strong>+ New → Database → Add PostgreSQL</strong>.</p>
+          <p>O banco é provisionado em segundos. O Railway expõe automaticamente as variáveis:</p>
+          <pre><span class="key">PGHOST</span>       = <span class="str">hostname do banco</span>
+<span class="key">PGPORT</span>       = <span class="str">5432</span>
+<span class="key">PGDATABASE</span>   = <span class="str">railway</span>
+<span class="key">PGUSER</span>       = <span class="str">postgres</span>
+<span class="key">PGPASSWORD</span>   = <span class="str">gerado automaticamente</span>
+<span class="key">DATABASE_URL</span> = <span class="str">postgresql://postgres:SENHA@HOST:PORT/railway</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Conectar o banco ao serviço backend</div>
+          <p>No serviço do backend, vá em <strong>Variables → Add Variable</strong> e adicione:</p>
+          <pre><span class="key">DATABASE_URL</span> = <span class="val">${{Postgres.DATABASE_URL}}</span></pre>
+          <p>A sintaxe <code>${{Postgres.DATABASE_URL}}</code> é uma referência dinâmica do Railway — ele injeta automaticamente a URL correta do banco provisionado.</p>
+          <div class="callout warn">
+            <span class="callout-i">⚠️</span>
+            <span>O Prisma precisa da <code>DATABASE_URL</code> para rodar as migrations. O <code>Dockerfile</code> já executa <code>prisma migrate deploy</code> no startup — certifique-se de que a variável está configurada antes do primeiro deploy.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Verificar migrations e seed</div>
+          <p>Após o deploy, abra os logs em <strong>Deployments → View Logs</strong> e confirme que as migrations rodaram:</p>
+          <pre><span class="cmt">✓ Migrations applied successfully
+✓ Seed data inserted (demo montador)
+🚀 Montador Pro API rodando em http://localhost:3000</span></pre>
+          <p>Se as migrations não rodaram, acesse o terminal do Railway (<strong>serviço → Deploy → Connect</strong>) e rode manualmente:</p>
+          <pre><span class="cmd">npx prisma migrate deploy
+node prisma/seed.js</span></pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ══ PARTE 3: ENV VARS ══ -->
+  <div class="section" id="env">
+    <div class="section-num">Parte 3</div>
+    <h2>Variáveis de Ambiente</h2>
+    <p>Configure todas as variáveis no painel do Railway em <strong>seu serviço → Variables</strong>. Clique em <strong>+ New Variable</strong> para cada uma.</p>
+
+    <div class="callout info">
+      <span class="callout-i">🔐</span>
+      <span>Nunca faça commit do arquivo <code>.env</code> com secrets reais. O Railway injeta tudo via painel, sem necessidade de arquivo <code>.env</code> em produção.</span>
+    </div>
+
+    <table class="env-table">
+      <thead>
+        <tr>
+          <th>Variável</th>
+          <th>Valor / Descrição</th>
+          <th>Obrig.</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DATABASE_URL</td>
+          <td><code>${{Postgres.DATABASE_URL}}</code> — referência automática ao PostgreSQL do Railway</td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>NODE_ENV</td>
+          <td><code>production</code></td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>PORT</td>
+          <td><code>3000</code> (Railway injeta automaticamente — pode omitir)</td>
+          <td><span class="opt">AUTO</span></td>
+        </tr>
+        <tr>
+          <td>JWT_SECRET</td>
+          <td>String aleatória longa. Gere com: <code>openssl rand -hex 64</code></td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>JWT_REFRESH_SECRET</td>
+          <td>Outra string aleatória diferente do JWT_SECRET</td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>JWT_EXPIRES_IN</td>
+          <td><code>15m</code></td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>JWT_REFRESH_EXPIRES_IN</td>
+          <td><code>30d</code></td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>ADMIN_SECRET</td>
+          <td>Senha usada no painel admin. Gere com: <code>openssl rand -hex 32</code></td>
+          <td><span class="req">SIM</span></td>
+        </tr>
+        <tr>
+          <td>VAPID_PUBLIC_KEY</td>
+          <td>Chave pública VAPID para push notifications (já configurada no sistema)</td>
+          <td><span class="opt">PUSH</span></td>
+        </tr>
+        <tr>
+          <td>VAPID_PRIVATE_KEY</td>
+          <td>Chave privada VAPID — obrigatória se quiser push real</td>
+          <td><span class="opt">PUSH</span></td>
+        </tr>
+        <tr>
+          <td>VAPID_SUBJECT</td>
+          <td><code>mailto:admin@nfmoveis.com.br</code></td>
+          <td><span class="opt">PUSH</span></td>
+        </tr>
+        <tr>
+          <td>RESEND_API_KEY</td>
+          <td>Chave da API do Resend (começa com <code>re_</code>) — ver Parte 4</td>
+          <td><span class="opt">EMAIL</span></td>
+        </tr>
+        <tr>
+          <td>RESEND_FROM</td>
+          <td><code>NF Móveis &lt;noreply@nfmoveis.com.br&gt;</code> — domínio verificado no Resend</td>
+          <td><span class="opt">EMAIL</span></td>
+        </tr>
+        <tr>
+          <td>CORS_ORIGIN</td>
+          <td>URL do frontend, ex: <code>https://testenf-production.up.railway.app</code></td>
+          <td><span class="opt">NÃO</span></td>
+        </tr>
+        <tr>
+          <td>MAX_FOTO_MB</td>
+          <td><code>5</code></td>
+          <td><span class="opt">NÃO</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Gerar secrets seguros (rodar localmente)</h3>
+    <pre><span class="cmt"># JWT Secret</span>
+<span class="cmd">openssl rand -hex 64</span>
+<span class="cmt"># saída: a1b2c3d4e5f6... (128 chars)</span>
+
+<span class="cmt"># JWT Refresh Secret (diferente do anterior)</span>
+<span class="cmd">openssl rand -hex 64</span>
+
+<span class="cmt"># Admin Secret</span>
+<span class="cmd">openssl rand -hex 32</span>
+
+<span class="cmt"># Gerar novas chaves VAPID (se necessário)</span>
+<span class="cmd">npx web-push generate-vapid-keys</span>
+<span class="cmt"># Public Key: BEl62iUYgUiv...
+# Private Key: abc123...</span></pre>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ══ PARTE 4: RESEND ══ -->
+  <div class="section" id="resend">
+    <div class="section-num">Parte 4</div>
+    <h2>Configurar o Resend</h2>
+    <p>O Resend é um serviço de e-mail para desenvolvedores com plano gratuito de 3.000 e-mails/mês. Usado para notificações de convite, aprovação de montador e confirmações de serviço.</p>
+
+    <div class="plat-header">
+      <div class="plat-icon resend">✉️</div>
+      <div>
+        <div class="plat-name">Resend</div>
+        <div class="plat-sub">resend.com · 3.000 emails/mês grátis · API simples</div>
+      </div>
+      <a class="plat-link" href="https://resend.com" target="_blank">Acessar →</a>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Criar conta no Resend</div>
+          <p>Acesse <strong>resend.com</strong> e crie uma conta gratuita. Você pode começar enviando pelo domínio de teste <code>onboarding@resend.dev</code> sem configurar um domínio próprio.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Gerar a API Key</div>
+          <p>No painel do Resend: <strong>API Keys → Create API Key</strong></p>
+          <ul>
+            <li><strong>Name:</strong> Montador Pro Production</li>
+            <li><strong>Permission:</strong> Sending access</li>
+            <li><strong>Domain:</strong> All domains (ou selecione o seu)</li>
+          </ul>
+          <div class="callout danger">
+            <span class="callout-i">🔴</span>
+            <span>A chave começa com <code>re_</code> e aparece <strong>apenas uma vez</strong>. Copie imediatamente e salve em local seguro antes de fechar a janela.</span>
+          </div>
+          <p>Adicione a chave no Railway em <code>RESEND_API_KEY</code>.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num"></div>
+        <div class="step-body">
+          <div class="step-title">Verificar domínio próprio (opcional mas recomendado)</div>
+          <p>Para enviar de <code>@nfmoveis.com.br</code>, vá em <strong>Resend → Domains → Add Domain</strong> e siga:</p>
+          <ol>
+            <li>Digite o domínio: <code>nfmoveis.com.br</code></li>
+            <li>O Resend mostrará registros DNS (TXT, MX, DKIM)</li>
+            <li>Adicione esses registros no painel do seu registrador de domínio (Registro.br, Cloudflare, etc.)</li>
+            <li>Aguarde de 5 min a 48h para propagação</li>
+            <li>Clique em <strong>Verify</strong> no Resend</li>
+          </ol>
+          <div class="callout tip">
+            <span class="callout-i">✅</span>
+            <span>Sem domínio verificado, use <code>onboarding@resend.dev</code> como remetente — funciona perfeitamente para testes e desenvolvimento.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ══ PARTE 5: INTEGRAÇÃO ══ -->
+  <div class="section" id="integracao">
+    <div class="section-num">Parte 5</div>
+    <h2>Integrar Resend ao Backend</h2>
+    <p>Adicionar o SDK do Resend ao backend Node.js para enviar e-mails de notificação automáticos.</p>
+
+    <h3>1. Instalar o SDK</h3>
+    <pre><span class="cmd">npm install resend</span></pre>
+
+    <h3>2. Criar o serviço de e-mail</h3>
+    <p>Crie o arquivo <code>backend/src/utils/email.js</code>:</p>
+    <pre><span class="cmt">// backend/src/utils/email.js</span>
+<span class="key">const</span> { Resend } = require(<span class="str">'resend'</span>);
+
+<span class="key">const</span> resend = <span class="key">new</span> Resend(process.env.<span class="val">RESEND_API_KEY</span>);
+
+<span class="key">const</span> FROM = process.env.<span class="val">RESEND_FROM</span> || <span class="str">'NF Móveis &lt;onboarding@resend.dev&gt;'</span>;
+
+<span class="cmt">// ── Email: Convite de Serviço ──────────────────────────────</span>
+async <span class="key">function</span> emailConvite({ para, nomeMontador, descricao, endereco, data, valor, linkApp }) {
+  <span class="key">return</span> resend.emails.send({
+    from: FROM,
+    to: [para],
+    subject: <span class="str">`🔔 Novo Serviço Disponível — R$ ${valor}`</span>,
+    html: <span class="str">`
+      &lt;div style="font-family:sans-serif;max-width:520px;margin:0 auto"&gt;
+        &lt;div style="background:#004d4d;color:#fff;padding:24px 28px;border-radius:12px 12px 0 0"&gt;
+          &lt;h2 style="margin:0;font-size:22px"&gt;🔔 Novo Serviço, ${nomeMontador.split(' ')[0]}!&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div style="background:#f8f7f4;padding:24px 28px;border-radius:0 0 12px 12px;border:1px solid #e5e4e0"&gt;
+          &lt;p style="font-size:28px;font-weight:800;color:#004d4d;margin:0 0 16px"&gt;R$ ${valor}&lt;/p&gt;
+          &lt;p&gt;&lt;strong&gt;Serviço:&lt;/strong&gt; ${descricao}&lt;/p&gt;
+          &lt;p&gt;&lt;strong&gt;📍 Endereço:&lt;/strong&gt; ${endereco}&lt;/p&gt;
+          &lt;p&gt;&lt;strong&gt;📅 Data:&lt;/strong&gt; ${data}&lt;/p&gt;
+          &lt;p style="margin-top:24px"&gt;
+            &lt;a href="${linkApp}" style="background:#C5A059;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700"&gt;
+              Abrir no App →
+            &lt;/a&gt;
+          &lt;/p&gt;
+          &lt;p style="font-size:12px;color:#999;margin-top:20px"&gt;Este convite expira em 20 minutos.&lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    `</span>,
+  });
+}
+
+<span class="cmt">// ── Email: Aprovação de Montador ──────────────────────────</span>
+async <span class="key">function</span> emailAprovacao({ para, nomeMontador, linkApp }) {
+  <span class="key">return</span> resend.emails.send({
+    from: FROM,
+    to: [para],
+    subject: <span class="str">'✅ Cadastro Aprovado — Montador Pro'</span>,
+    html: <span class="str">`
+      &lt;div style="font-family:sans-serif;max-width:520px;margin:0 auto"&gt;
+        &lt;div style="background:#27AE60;color:#fff;padding:24px 28px;border-radius:12px 12px 0 0"&gt;
+          &lt;h2 style="margin:0"&gt;✅ Cadastro Aprovado!&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div style="background:#f8f7f4;padding:24px 28px;border-radius:0 0 12px 12px;border:1px solid #e5e4e0"&gt;
+          &lt;p&gt;Olá &lt;strong&gt;${nomeMontador}&lt;/strong&gt;! Seu cadastro foi aprovado.&lt;/p&gt;
+          &lt;p&gt;Você já pode entrar no app e receber convites de serviço.&lt;/p&gt;
+          &lt;p style="margin-top:24px"&gt;
+            &lt;a href="${linkApp}" style="background:#004d4d;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700"&gt;
+              Acessar o App →
+            &lt;/a&gt;
+          &lt;/p&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    `</span>,
+  });
+}
+
+<span class="cmt">// ── Email: OS Concluída (para o admin) ───────────────────</span>
+async <span class="key">function</span> emailOSConcluida({ para, nomeMontador, numero, valor }) {
+  <span class="key">return</span> resend.emails.send({
+    from: FROM,
+    to: [para],
+    subject: <span class="str">`🎉 OS ${numero} Concluída — ${nomeMontador}`</span>,
+    html: <span class="str">`
+      &lt;div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px"&gt;
+        &lt;h2&gt;OS ${numero} foi finalizada!&lt;/h2&gt;
+        &lt;p&gt;&lt;strong&gt;Montador:&lt;/strong&gt; ${nomeMontador}&lt;/p&gt;
+        &lt;p&gt;&lt;strong&gt;Valor:&lt;/strong&gt; R$ ${valor}&lt;/p&gt;
+        &lt;p&gt;Aguardando aprovação e liberação do pagamento.&lt;/p&gt;
+      &lt;/div&gt;
+    `</span>,
+  });
+}
+
+module.exports = { emailConvite, emailAprovacao, emailOSConcluida };</pre>
+
+    <h3>3. Usar nos endpoints existentes</h3>
+    <p>Adicione chamadas de e-mail nos pontos principais do backend (opcional — o sistema funciona sem e-mail, usando apenas push notifications):</p>
+
+    <pre><span class="cmt">// Em backend/src/routes/admin.js — ao criar convite:</span>
+<span class="key">const</span> { emailConvite } = require(<span class="str">'../utils/email'</span>);
+
+<span class="cmt">// Dentro do POST /convites, após criar o convite:</span>
+<span class="key">if</span> (process.env.<span class="val">RESEND_API_KEY</span>) {
+  <span class="key">try</span> {
+    <span class="key">const</span> m = await prisma.montador.findUnique({ where: { id: montadorId } });
+    <span class="key">if</span> (m?.email) {
+      await emailConvite({
+        para: m.email,
+        nomeMontador: m.nome,
+        descricao: os.descricao,
+        endereco: os.endereco,
+        data: os.dataInstalacao.toLocaleDateString(<span class="str">'pt-BR'</span>),
+        valor: os.valorBruto,
+        linkApp: <span class="str">`${process.env.APP_URL || ''}/app/`</span>,
+      });
+    }
+  } <span class="key">catch</span>(e) { <span class="cmt">/* email falhou, mas convite continua ativo */</span> }
+}</pre>
+
+    <h3>4. Adicionar campo email no schema (opcional)</h3>
+    <p>Se quiser e-mails para os montadores, adicione o campo no schema Prisma:</p>
+    <pre><span class="cmt">// Em prisma/schema.prisma — modelo Montador:</span>
+model Montador {
+  <span class="cmt">// ... campos existentes ...</span>
+  <span class="key">email</span>  String?   <span class="cmt">// adicionar esta linha</span>
+}</pre>
+    <pre><span class="cmt"># Após editar o schema, rodar a migration:</span>
+<span class="cmd">npx prisma migrate dev --name add_email_montador</span></pre>
+
+    <h3>5. Testar o envio</h3>
+    <pre><span class="cmt"># Teste rápido via curl (substitua a URL e a key):</span>
+<span class="cmd">curl -X POST https://api.resend.com/emails \
+  -H "Authorization: Bearer re_SuaChaveAqui" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "from": "onboarding@resend.dev",
+    "to": ["seuemail@gmail.com"],
+    "subject": "Teste Montador Pro",
+    "html": "&lt;strong&gt;Funcionou!&lt;/strong&gt;"
+  }'</span>
+
+<span class="cmt"># Resposta esperada:</span>
+<span class="str">{"id":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}</span></pre>
+  </div>
+
+  <div class="div"></div>
+
+  <!-- ══ CHECKLIST ══ -->
+  <div class="section" id="checklist">
+    <div class="section-num">Checklist</div>
+    <h2>Checklist Final de Deploy</h2>
+
+    <h3>Railway</h3>
+    <ul class="checklist">
+      <li>Repositório no GitHub com a pasta <code>backend/</code></li>
+      <li>Root Directory configurado para <code>backend</code> (se necessário)</li>
+      <li>PostgreSQL adicionado ao projeto Railway</li>
+      <li><code>DATABASE_URL</code> referenciando <code>${{Postgres.DATABASE_URL}}</code></li>
+      <li><code>JWT_SECRET</code> e <code>JWT_REFRESH_SECRET</code> configurados (diferentes entre si)</li>
+      <li><code>ADMIN_SECRET</code> configurado (anote em lugar seguro)</li>
+      <li><code>NODE_ENV=production</code> configurado</li>
+      <li>Domínio público gerado (Settings → Networking)</li>
+      <li>Migrations rodadas com sucesso (verificar logs)</li>
+      <li>Seed de dados demo inserido</li>
+      <li>Endpoint <code>/health</code> retornando <code>{"status":"ok"}</code></li>
+    </ul>
+
+    <h3>Resend</h3>
+    <ul class="checklist">
+      <li>Conta criada no resend.com</li>
+      <li>API Key gerada e salva com segurança</li>
+      <li><code>RESEND_API_KEY</code> configurado no Railway</li>
+      <li><code>RESEND_FROM</code> configurado (domínio verificado ou <code>onboarding@resend.dev</code>)</li>
+      <li>Arquivo <code>src/utils/email.js</code> criado no backend</li>
+      <li>Teste de envio funcionando via curl ou pelo painel do Resend</li>
+    </ul>
+
+    <h3>Frontend (app.html)</h3>
+    <ul class="checklist">
+      <li><code>CFG.API</code> apontando para a URL do Railway em produção</li>
+      <li><code>CFG.VAPID_PUB</code> igual ao <code>VAPID_PUBLIC_KEY</code> do backend</li>
+      <li>PWA acessível em <code>https://seusite.com/app/</code></li>
+      <li>Login demo funcionando: <code>(62) 9 8844-1212</code> / <code>demo123</code></li>
+    </ul>
+
+    <div class="callout tip" style="margin-top:28px">
+      <span class="callout-i">🚀</span>
+      <div>
+        <strong>URLs finais do sistema:</strong><br>
+        <code>https://sua-api.up.railway.app/health</code> — health check<br>
+        <code>https://sua-api.up.railway.app/api/v1/auth/login</code> — endpoint de login<br>
+        <code>https://seusite.com/app/</code> — PWA montadores<br>
+        <code>https://seusite.com/admin-v2.html</code> — painel administrativo
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>NF Móveis Planejados</strong> · Montador Pro · Guia de Deploy<br>
+  Railway + Resend + PostgreSQL + Node.js
+</footer>
+
+</body>
+</html>

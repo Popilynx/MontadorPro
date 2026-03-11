@@ -31,7 +31,7 @@ const MontadoresList = () => {
     const fetchMontadores = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/montadores');
+            const response = await api.get('/admin/montadores');
             setMontadores(response.data);
         } catch (err) {
             console.error('Erro ao buscar montadores:', err);

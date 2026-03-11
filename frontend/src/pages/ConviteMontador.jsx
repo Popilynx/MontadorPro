@@ -141,28 +141,55 @@ const ConviteMontador = () => {
     const navigate = useNavigate();
     const [osData, setOsData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [status, setStatus] = useState('pending'); // 'pending' | 'accepted' | 'declined' | 'expired'
-    const [fotos, setFotos] = useState([]);
-    const [nota, setNota] = useState(5);
-    const [observacao, setObservacao] = useState('');
-    const [finalizado, setFinalizado] = useState(false);
-    const [timeLeft, setTimeLeft] = useState(300);
+    const [checkedIn, setCheckedIn] = useState(false);
+    const [performingCheckIn, setPerformingCheckIn] = useState(false);
 
-    const [osDisponivel, setOsDisponivel] = useState([]);
-    const [loadingDisponivel, setLoadingDisponivel] = useState(false);
-    const [aceitando, setAceitando] = useState(null); // id da OS sendo aceita
+    const handleCheckIn = async () => {
+        if (!navigator.geolocation) {
+            return alert('Geolocalização não suportada no seu navegador.');
+        }
+        
+        setPerformingCheckIn(true);
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            try {
+                const { latitude, longitude } = pos.coords;
+                // v1: POST /execucao/chegada { osId, lat, lng }
+                await api.post('/execucao/chegada', { 
+                    osId: id, 
+                    lat: latitude, 
+                    lng: longitude 
+                });
+                setCheckedIn(true);
+                alert('Chegada confirmada com sucesso!');
+            } catch (err) {
+                console.error('Erro no check-in:', err);
+                alert(err.response?.data?.error || 'Erro ao confirmar chegada.');
+            } finally {
+                setPerformingCheckIn(false);
+            }
+        }, (err) => {
+            alert('Erro ao obter localização GPS.');
+            setPerformingCheckIn(false);
+        });
+    };
+
 
     const fetchOS = async () => {
         try {
             setLoading(true);
+            // v1: Buscar convite específico ou execução ativa
+            const resExec = await api.get('/execucao/ativa');
+            if (resExec.data && (resExec.data.ordemId === id || !id)) {
+                setOsData(resExec.data.ordem);
+                setStatus('accepted');
+                setCheckedIn(!!resExec.data.checkInAt);
+                if (resExec.data.status === 'concluida') setFinalizado(true);
+                return;
+            }
+
             const response = await api.get(`/os/${id}`);
             setOsData(response.data);
-            // Se a OS já estiver aceita ou concluída no banco, atualiza o status local
-            if (response.data.status === 'ACEITA') setStatus('accepted');
-            if (response.data.status === 'CONCLUIDA') {
-                setStatus('accepted');
-                setFinalizado(true);
-            }
+            if (response.data.status === 'aceita') setStatus('accepted');
         } catch (err) {
             console.error('Erro ao buscar OS:', err);
         } finally {
@@ -173,44 +200,36 @@ const ConviteMontador = () => {
     const fetchOsDisponiveis = async () => {
         try {
             setLoadingDisponivel(true);
-            const response = await api.get('/os?status=DISPONIVEL&limit=50');
-            setOsDisponivel(response.data.ordens || []);
+            // v1: Busca o convite ativo atual do montador
+            const response = await api.get('/convites/ativo');
+            setOsDisponivel(response.data ? [response.data] : []);
         } catch (err) {
-            console.error('Erro ao buscar OS disponíveis:', err);
+            console.error('Erro ao buscar convites disponíveis:', err);
         } finally {
             setLoadingDisponivel(false);
         }
     };
 
-    useEffect(() => {
-        if (id) {
-            fetchOS();
-        } else {
-            setLoading(false);
-            fetchOsDisponiveis();
-        }
-    }, [id]);
-
-    // Countdown
-    useEffect(() => {
-        if (status !== 'pending') return;
-        if (timeLeft <= 0) { setStatus('expired'); return; }
-        const id = setInterval(() => setTimeLeft(t => t - 1), 1000);
-        return () => clearInterval(id);
-    }, [timeLeft, status]);
-
-    const addFoto = (foto) => setFotos(prev => [...prev, foto]);
-    const removeFoto = (id) => setFotos(prev => prev.filter(f => f.id !== id));
-
+// ...
     const handleFinalizar = async () => {
-        if (fotos.length === 0) return alert('Adicione pelo menos 1 foto para finalizar.');
+        if (fotos.length < 4) return alert('O sistema exige no mínimo 4 fotos para finalizar o serviço.');
         try {
             setLoading(true);
-            // Atualiza status para CONCLUIDA na API
-            await api.patch(`/os/${id}/status`, { status: 'CONCLUIDA' });
+            
+            // 1. Enviar fotos via /execucao/:id/fotos
+            const formData = new FormData();
+            fotos.forEach(f => {
+                if (f.file) formData.append('fotos', f.file);
+            });
+            await api.post(`/execucao/${id}/fotos`, formData);
+
+            // 2. Finalizar serviço via /execucao/:id/finalizar
+            await api.post(`/execucao/${id}/finalizar`);
+
             setFinalizado(true);
         } catch (err) {
             console.error('Erro ao finalizar OS:', err);
+            alert(err.response?.data?.error || 'Erro ao finalizar. Verifique as fotos (mínimo 4).');
         } finally {
             setLoading(false);
         }
@@ -218,12 +237,16 @@ const ConviteMontador = () => {
 
     const handleAceitar = async () => {
         try {
-            await api.patch(`/os/${id}/status`, { status: 'ACEITA' });
+            // v1: POST /convites/:id/aceitar
+            await api.post(`/convites/${id}/aceitar`);
             setStatus('accepted');
+            fetchOS(); // Atualizar dados
         } catch (err) {
             console.error('Erro ao aceitar OS:', err);
+            alert(err.response?.data?.error || 'Erro ao aceitar serviço.');
         }
     };
+
 
     if (loading) {
         return (
@@ -444,7 +467,7 @@ const ConviteMontador = () => {
                     {status === 'pending' && (
                         <div className="px-8 py-6 border-t border-primary-light/10 flex gap-4">
                             <button
-                                onClick={() => setStatus('declined')}
+                                onClick={handleRecusar}
                                 className="flex-1 flex items-center justify-center gap-2 py-4 border border-red-400/30 text-red-400 font-mono font-bold text-xs uppercase tracking-widest rounded-2xl hover:bg-red-500/5 transition-all"
                             >
                                 <XCircle size={18} /> Recusar
@@ -475,67 +498,87 @@ const ConviteMontador = () => {
                             <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
                             <div>
                                 <p className="font-mono font-bold text-sm text-emerald-600">Serviço Aceito — Em Andamento</p>
-                                <p className="font-mono text-xs text-emerald-600/60 uppercase tracking-widest">Registre as fotos e finalize quando concluir</p>
+                                <p className="font-mono text-xs text-emerald-600/60 uppercase tracking-widest">
+                                    {checkedIn ? 'Localização Validada' : 'Valide sua localização para iniciar'}
+                                </p>
                             </div>
                         </div>
 
-                        {/* Upload de Fotos */}
-                        <div className="bg-white rounded-[2rem] border border-primary-light/10 shadow-xl shadow-primary/5 p-8">
-                            <PhotoGrid fotos={fotos} onAdd={addFoto} onRemove={removeFoto} />
-                        </div>
+                        {/* Botão de Check-in */}
+                        {!checkedIn && (
+                            <button
+                                onClick={handleCheckIn}
+                                disabled={performingCheckIn}
+                                className="w-full flex items-center justify-center gap-3 py-5 bg-primary text-background font-mono font-bold uppercase tracking-widest rounded-[2rem] shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                            >
+                                <MapPin size={20} />
+                                {performingCheckIn ? 'Validando local...' : 'Validar Presença (Check-in)'}
+                                <ChevronRight size={18} />
+                            </button>
+                        )}
 
-                        {/* Avaliação Interna & Observações */}
-                        <div className="bg-white rounded-[2rem] border border-primary-light/10 shadow-xl shadow-primary/5 p-8 space-y-6">
-                            <div>
-                                <h3 className="font-sans font-bold text-primary mb-1">Auto-avaliação da Montagem</h3>
-                                <p className="font-mono text-xs uppercase tracking-widest text-primary-light/40">Como você avalia a qualidade desta montagem?</p>
-                            </div>
+                        {/* O conteúdo abaixo só aparece após Check-in */}
+                        {checkedIn && (
+                            <>
+                                {/* Upload de Fotos */}
+                                <div className="bg-white rounded-[2rem] border border-primary-light/10 shadow-xl shadow-primary/5 p-8">
+                                    <PhotoGrid fotos={fotos} onAdd={addFoto} onRemove={removeFoto} />
+                                </div>
 
-                            <div className="flex gap-3">
-                                {[1, 2, 3, 4, 5].map(s => (
-                                    <button
-                                        key={s}
-                                        onClick={() => setNota(s)}
-                                        className="transition-transform hover:scale-110 active:scale-95"
-                                    >
-                                        <Star
-                                            size={32}
-                                            fill={s <= nota ? '#C9A84C' : 'none'}
-                                            stroke={s <= nota ? '#C9A84C' : '#2A2A35'}
-                                            className="transition-all"
+                                {/* Avaliação Interna & Observações */}
+                                <div className="bg-white rounded-[2rem] border border-primary-light/10 shadow-xl shadow-primary/5 p-8 space-y-6">
+                                    <div>
+                                        <h3 className="font-sans font-bold text-primary mb-1">Auto-avaliação da Montagem</h3>
+                                        <p className="font-mono text-xs uppercase tracking-widest text-primary-light/40">Como você avalia a qualidade desta montagem?</p>
+                                    </div>
+
+                                    <div className="flex gap-3">
+                                        {[1, 2, 3, 4, 5].map(s => (
+                                            <button
+                                                key={s}
+                                                onClick={() => setNota(s)}
+                                                className="transition-transform hover:scale-110 active:scale-95"
+                                            >
+                                                <Star
+                                                    size={32}
+                                                    fill={s <= nota ? '#C9A84C' : 'none'}
+                                                    stroke={s <= nota ? '#C9A84C' : '#2A2A35'}
+                                                    className="transition-all"
+                                                />
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div>
+                                        <label className="block font-mono text-xs uppercase tracking-widest text-primary-light/50 mb-2">
+                                            Observações (opcional)
+                                        </label>
+                                        <textarea
+                                            value={observacao}
+                                            onChange={e => setObservacao(e.target.value)}
+                                            placeholder="Dificuldades encontradas, itens danificados, informações relevantes..."
+                                            rows={3}
+                                            className="w-full bg-background border border-primary-light/10 rounded-2xl px-5 py-4 font-sans text-sm text-primary placeholder:text-primary-light/30 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all resize-none"
                                         />
-                                    </button>
-                                ))}
-                            </div>
+                                    </div>
+                                </div>
 
-                            <div>
-                                <label className="block font-mono text-xs uppercase tracking-widest text-primary-light/50 mb-2">
-                                    Observações (opcional)
-                                </label>
-                                <textarea
-                                    value={observacao}
-                                    onChange={e => setObservacao(e.target.value)}
-                                    placeholder="Dificuldades encontradas, itens danificados, informações relevantes..."
-                                    rows={3}
-                                    className="w-full bg-background border border-primary-light/10 rounded-2xl px-5 py-4 font-sans text-sm text-primary placeholder:text-primary-light/30 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all resize-none"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Botão Finalizar */}
-                        <button
-                            onClick={handleFinalizar}
-                            disabled={fotos.length === 0}
-                            className="w-full flex items-center justify-center gap-3 py-5 bg-accent text-primary font-mono font-bold uppercase tracking-widest rounded-[2rem] shadow-xl shadow-accent/30 hover:shadow-accent/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
-                        >
-                            <Package size={20} />
-                            Finalizar Ordem de Serviço
-                            <ChevronRight size={18} />
-                        </button>
-                        {fotos.length === 0 && (
-                            <p className="text-center font-mono text-xs text-red-400/70 uppercase tracking-widest">
-                                Adicione pelo menos 1 foto para finalizar
-                            </p>
+                                {/* Botão Finalizar */}
+                                <button
+                                    onClick={handleFinalizar}
+                                    disabled={fotos.length === 0}
+                                    className="w-full flex items-center justify-center gap-3 py-5 bg-accent text-primary font-mono font-bold uppercase tracking-widest rounded-[2rem] shadow-xl shadow-accent/30 hover:shadow-accent/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                                >
+                                    <Package size={20} />
+                                    Finalizar Ordem de Serviço
+                                    <ChevronRight size={18} />
+                                </button>
+                                {fotos.length === 0 && (
+                                    <p className="text-center font-mono text-xs text-red-400/70 uppercase tracking-widest">
+                                        Adicione pelo menos 1 foto para finalizar
+                                    </p>
+                                )}
+                            </>
                         )}
                     </>
                 )}
