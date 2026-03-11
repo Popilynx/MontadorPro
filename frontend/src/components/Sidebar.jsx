@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         <aside className={`
             fixed top-0 left-0 z-50 h-screen
             w-[80vw] max-w-xs lg:w-64
-            bg-primary border-r border-primary-light/10 flex flex-col 
+            bg-primary border-r border-white/10 flex flex-col 
             shadow-2xl transition-transform duration-300 ease-in-out
             ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
@@ -53,7 +53,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 </div>
                 <button 
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden text-background/50 hover:text-white"
+                    className="lg:hidden text-primary-light/50 hover:text-primary-light"
                 >
                     <CloseIcon size={24} />
                 </button>
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         className={({ isActive }) =>
                             `flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group ${isActive
                                 ? 'bg-accent/10 border border-accent/20 text-accent shadow-inner'
-                                : 'text-background/50 hover:bg-primary-light/30 border border-transparent hover:text-background'
+                                : 'text-primary-light/50 hover:bg-white/10 border border-transparent hover:text-primary-light'
                             }`
                         }
                     >
@@ -86,7 +86,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             <div className="p-6 border-t border-primary-light/10">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-background/40 hover:bg-red-950/30 hover:text-red-400 rounded-2xl transition-all text-sm font-mono tracking-widest uppercase"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-primary-light/40 hover:bg-red-950/30 hover:text-red-400 rounded-2xl transition-all text-sm font-mono tracking-widest uppercase"
                 >
                     <LogOut size={16} />
                     <span>Desconectar</span>
