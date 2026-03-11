@@ -1,17 +1,26 @@
 const webpush = require('web-push');
 const prisma = require('../config/db');
 
-// Configurar chaves VAPID
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT || 'mailto:admin@nfmoveis.com.br',
-  process.env.VAPID_PUBLIC_KEY,
-  process.env.VAPID_PRIVATE_KEY
-);
+// Configurar chaves VAPID de forma resiliente
+const isPushEnabled = process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY;
+
+if (isPushEnabled) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT || 'mailto:admin@montadorpro.com',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+} else {
+  console.warn('⚠️ Push Notifications: VAPID_PUBLIC_KEY ou VAPID_PRIVATE_KEY ausentes no .env.');
+  console.warn('As notificações push estarão desativadas até que as chaves sejam configuradas.');
+}
 
 /**
  * Envia notificação push para um montador
  */
 async function enviarNotificacao(montadorId, payload) {
+  if (!isPushEnabled) return;
+  
   try {
     const subscriptions = await prisma.pushSubscription.findMany({
       where: { montadorId }
@@ -46,6 +55,8 @@ async function enviarNotificacao(montadorId, payload) {
  * Envia notificação de broadcast para todos os montadores
  */
 async function broadcast(payload) {
+  if (!isPushEnabled) return;
+
   try {
     const subscriptions = await prisma.pushSubscription.findMany();
     
