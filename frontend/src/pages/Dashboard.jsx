@@ -28,34 +28,42 @@ const Dashboard = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // v1 Admin uses x-admin-secret. In a real app, this should be handled by a secure context or interceptor.
-                // For this migration, we'll try to fetch with headers or use public if available.
-                // Assuming the adminSecret is stored somewhere or provided by user. 
-                // We'll update to /admin/stats and /admin/montadores
-                const [statsRes, montadoresRes, ordersRes] = await Promise.all([
+                // Promise.allSettled garante que uma rota com erro (ex: 403 se não for admin)
+                // não cancela as demais buscas.
+                const [statsResult, montadoresResult, ordersResult] = await Promise.allSettled([
                     api.get('/admin/stats'),
                     api.get('/admin/montadores'),
-                    api.get('/os?limit=3')
+                    api.get('/admin/ordens?limit=3'),
                 ]);
 
-                setStats([
-                    { title: 'Ordens Concluídas', value: statsRes.data.totalOS, icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
-                    { title: 'Montadores Ativos', value: statsRes.data.totalMontadores, icon: <Users />, color: 'bg-emerald-500', trend: 0 },
-                    { title: 'Tempo Médio', value: '2.5h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
-                    { title: 'Faturamento Total', value: `R$ ${statsRes.data.faturamento.toLocaleString('pt-BR')}`, icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
-                ]);
+                if (statsResult.status === 'fulfilled') {
+                    const d = statsResult.value.data;
+                    setStats([
+                        { title: 'Ordens Concluídas', value: d.totalOS ?? 0, icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
+                        { title: 'Montadores Ativos', value: d.totalMontadores ?? 0, icon: <Users />, color: 'bg-emerald-500', trend: 0 },
+                        { title: 'Tempo Médio', value: '2.5h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
+                        { title: 'Faturamento Total', value: `R$ ${(d.faturamento ?? 0).toLocaleString('pt-BR')}`, icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
+                    ]);
+                }
 
-                setRecentOrders(ordersRes.data.ordens || []);
-                setMontadores(montadoresRes.data || []);
+                if (ordersResult.status === 'fulfilled') {
+                    // /admin/ordens retorna um array direto (não { ordens: [] })
+                    const raw = ordersResult.value.data;
+                    setRecentOrders(Array.isArray(raw) ? raw.slice(0, 3) : (raw.ordens ?? []).slice(0, 3));
+                }
+
+                if (montadoresResult.status === 'fulfilled') {
+                    setMontadores(montadoresResult.value.data || []);
+                }
             } catch (err) {
-                console.error('Erro ao carregar dados do dashboard:', err);
+                console.error('Erro inesperado no dashboard:', err);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 30000); // Polling real-time every 30s
+        const interval = setInterval(fetchData, 30000);
         return () => clearInterval(interval);
     }, []);
 

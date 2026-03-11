@@ -12,22 +12,30 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-const GOLD_ICON = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
+// Ícone dourado: SVG inline — sem dependência de CDN externo (evita bloqueio CSP)
+const GOLD_ICON = L.divIcon({
+    className: '',
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="25" height="37">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24S24 21 24 12C24 5.37 18.63 0 12 0z"
+        fill="#C9A84C" stroke="#8B6914" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="5" fill="white" opacity="0.9"/>
+    </svg>`,
+    iconSize: [25, 37],
+    iconAnchor: [12, 37],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41],
 });
 
-const BLUE_ICON = new L.Icon({
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
+// Ícone azul: SVG inline também, para consistência
+const BLUE_ICON = L.divIcon({
+    className: '',
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="25" height="37">
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 24 12 24S24 21 24 12C24 5.37 18.63 0 12 0z"
+        fill="#2563EB" stroke="#1E40AF" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="5" fill="white" opacity="0.9"/>
+    </svg>`,
+    iconSize: [25, 37],
+    iconAnchor: [12, 37],
     popupAnchor: [1, -34],
-    shadowSize: [41, 41],
 });
 
 // Componente interno para invalidar o tamanho do mapa após render
