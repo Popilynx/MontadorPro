@@ -2,17 +2,23 @@ const webpush = require('web-push');
 const prisma = require('../config/db');
 
 // Configurar chaves VAPID de forma resiliente
-const isPushEnabled = process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY;
+let isPushEnabled = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 
 if (isPushEnabled) {
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || 'mailto:admin@montadorpro.com',
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-  );
-} else {
-  console.warn('⚠️ Push Notifications: VAPID_PUBLIC_KEY ou VAPID_PRIVATE_KEY ausentes no .env.');
-  console.warn('As notificações push estarão desativadas até que as chaves sejam configuradas.');
+  try {
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || 'mailto:admin@montadorpro.com',
+      process.env.VAPID_PUBLIC_KEY.trim(),
+      process.env.VAPID_PRIVATE_KEY.trim()
+    );
+  } catch (err) {
+    console.error('❌ Erro ao configurar Web Push (VAPID):', err.message);
+    isPushEnabled = false;
+  }
+}
+
+if (!isPushEnabled) {
+  console.warn('⚠️ Push Notifications: Desativadas. Verifique VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY no .env.');
 }
 
 /**
