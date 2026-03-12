@@ -89,9 +89,9 @@ const MontadoresList = () => {
                         <p className="text-primary-light/50 font-mono tracking-widest uppercase text-sm">Escaneando profissionais...</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-[1.5rem] md:rounded-[3rem] p-4 md:p-10 shadow-2xl shadow-primary/5 border border-primary-light/5">
-                        <div className="overflow-x-auto -mx-4 md:mx-0">
-                            <div className="inline-block min-w-full align-middle px-4 md:px-0">
+                    <div className="bg-white rounded-[1.5rem] md:rounded-[3rem] p-3 md:p-10 shadow-2xl shadow-primary/5 border border-primary-light/5">
+                        <div className="overflow-x-auto">
+                            <div className="inline-block min-w-full align-middle">
                                 <table className="w-full border-collapse">
                                     <thead>
                                         <tr className="text-left border-b border-primary-light/10">
@@ -105,9 +105,9 @@ const MontadoresList = () => {
                                         {filteredMontadores.length > 0 ? (
                                             filteredMontadores.map((m) => (
                                                 <tr key={m.id} className="group hover:bg-background/50 transition-colors">
-                                                    <td className="py-6">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className="w-10 h-10 md:w-12 md:h-12 bg-primary rounded-xl flex items-center justify-center text-accent border border-accent/20 group-hover:scale-110 transition-transform overflow-hidden shadow-lg">
+                                                    <td className="py-4 md:py-6">
+                                                        <div className="flex items-center gap-3 md:gap-4">
+                                                            <div className="w-9 h-9 md:w-12 md:h-12 bg-primary rounded-xl flex items-center justify-center text-accent border border-accent/20 group-hover:scale-110 transition-transform overflow-hidden shadow-lg">
                                                                 {m.foto_url ? (
                                                                     <img src={m.foto_url} alt={m.nome} className="w-full h-full object-cover" />
                                                                 ) : (
@@ -126,29 +126,29 @@ const MontadoresList = () => {
                                                             <span className="text-sm font-medium">{m.cidade_display || m.cidade || '—'}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="py-6">
-                                                        <div className="flex items-center gap-2">
+                                                    <td className="py-4 md:py-6">
+                                                        <div className="flex items-center gap-1.5 md:gap-2">
                                                             {getStatusIcon(m.status)}
-                                                            <span className="text-sm font-mono text-primary-light/70 capitalize">{m.status || 'Offline'}</span>
+                                                            <span className="text-[12px] md:text-sm font-mono text-primary-light/70 capitalize">{m.status || 'Offline'}</span>
                                                         </div>
                                                     </td>
-                                                    <td className="py-6 text-right">
-                                                        <div className="flex items-center justify-end gap-2">
+                                                    <td className="py-4 md:py-6 text-right">
+                                                        <div className="flex items-center justify-end gap-1 md:gap-2">
                                                             {isAdmin && (
                                                                 <button 
                                                                     onClick={() => {
                                                                         setSelectedMontador(m);
                                                                         setIsEditModalOpen(true);
                                                                     }}
-                                                                    className="p-2 text-primary-light/40 hover:bg-background rounded-xl transition-colors hover:text-accent"
+                                                                    className="p-1.5 md:p-2 text-primary-light/40 hover:bg-background rounded-xl transition-colors hover:text-accent"
                                                                     title="Editar Montador"
                                                                 >
-                                                                    <Edit size={18} />
+                                                                    <Edit className="w-4 h-4 md:w-[18px] md:h-[18px]" />
                                                                 </button>
                                                             )}
                                                             <button 
                                                                 onClick={() => navigate(`/montadores/${m.id}`)}
-                                                                className="text-accent hover:text-accent-hover text-xs font-mono tracking-widest uppercase px-3 py-2 rounded-xl transition-colors hover:bg-accent/5"
+                                                                className="text-accent hover:text-accent-hover text-[10px] md:text-xs font-mono tracking-widest uppercase px-2 md:px-3 py-2 rounded-xl transition-colors hover:bg-accent/5"
                                                             >
                                                                 Dossier
                                                             </button>

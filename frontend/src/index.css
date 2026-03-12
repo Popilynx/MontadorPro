@@ -55,9 +55,32 @@
   }
 
   /* Specific fix for inputs with bg-white/5 or similar */
-  .bg-white\/5, .bg-white\/10 {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.15) !important;
+  .bg-white\/5, .bg-white\/10, .bg-slate-50 {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #FAF8F5 !important;
+  }
+
+  /* Force labels to be light in dark mode */
+  label.text-slate-700, label.text-slate-600, .text-slate-800, .text-slate-500 {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+  
+  .text-slate-700 { color: rgba(255, 255, 255, 0.8) !important; }
+  .text-slate-800 { color: #FFFFFF !important; }
+  .text-slate-500 { color: rgba(255, 255, 255, 0.5) !important; }
+
+  /* Ensure inputs have a dark background and light text in dark mode */
+  input:not([type="submit"]):not([type="button"]), 
+  textarea, 
+  select {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  input::placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
   }
 
   /* Filtro de imagens para evitar estouro de branco */

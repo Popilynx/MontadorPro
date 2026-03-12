@@ -44,8 +44,8 @@ const NovoMontador = () => {
                         </div>
                     </div>
                     <div>
-                        <h2 className="text-3xl font-bold text-slate-800">Montador Cadastrado!</h2>
-                        <p className="text-slate-500 mt-2">
+                        <h2 className="text-3xl font-bold text-primary dark:text-white">Montador Cadastrado!</h2>
+                        <p className="text-primary-light/60 mt-2">
                             Um e-mail de verificação foi enviado para <strong>{formData.email}</strong>.<br />
                             O profissional precisa ativar a conta antes de conseguir acessar o sistema.
                         </p>
@@ -66,21 +66,21 @@ const NovoMontador = () => {
             <div className="max-w-2xl mx-auto">
                 <button
                     onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors mb-6 text-sm font-medium"
+                    className="flex items-center gap-2 text-primary-light/50 hover:text-accent transition-colors mb-6 text-sm font-medium"
                 >
                     <ArrowLeft size={16} />
                     Voltar para listagem
                 </button>
 
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                <div className="bg-white dark:bg-primary-dark/50 rounded-2xl shadow-sm border border-primary-light/10 overflow-hidden">
+                    <div className="p-8 border-b border-primary-light/10 bg-primary-light/5">
                         <div className="flex items-center gap-4">
-                            <div className="bg-primary/10 p-3 rounded-xl text-primary">
+                            <div className="bg-accent/10 p-3 rounded-xl text-accent">
                                 <UserPlus size={24} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-800">Novo Profissional</h3>
-                                <p className="text-sm text-slate-500">Preencha os dados básicos para acesso ao sistema.</p>
+                                <h3 className="text-xl font-bold text-primary dark:text-white">Novo Profissional</h3>
+                                <p className="text-sm text-primary-light/50">Preencha os dados básicos para acesso ao sistema.</p>
                             </div>
                         </div>
                     </div>
@@ -94,13 +94,13 @@ const NovoMontador = () => {
                                     required
                                     value={formData.nome}
                                     onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    className="w-full bg-primary-light/5 border border-primary-light/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all text-primary dark:text-white"
                                     placeholder="Ex: João da Silva"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1 flex items-center gap-2">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
                                     <Mail size={14} /> E-mail
                                 </label>
                                 <input
@@ -108,13 +108,13 @@ const NovoMontador = () => {
                                     required
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    className="w-full bg-primary-light/5 border border-primary-light/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all text-primary dark:text-white"
                                     placeholder="email@exemplo.com"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1 flex items-center gap-2">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
                                     <Phone size={14} /> Telefone
                                 </label>
                                 <input
@@ -122,13 +122,13 @@ const NovoMontador = () => {
                                     required
                                     value={formData.telefone}
                                     onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    className="w-full bg-primary-light/5 border border-primary-light/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all text-primary dark:text-white"
                                     placeholder="(11) 99999-9999"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1 flex items-center gap-2">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
                                     <CreditCard size={14} /> CPF
                                 </label>
                                 <input
@@ -136,13 +136,13 @@ const NovoMontador = () => {
                                     required
                                     value={formData.cpf}
                                     onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    className="w-full bg-primary-light/5 border border-primary-light/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all text-primary dark:text-white"
                                     placeholder="000.000.000-00"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1 flex items-center gap-2">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
                                     <Key size={14} /> Senha Inicial
                                 </label>
                                 <input
@@ -150,7 +150,7 @@ const NovoMontador = () => {
                                     required
                                     value={formData.senha}
                                     onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    className="w-full bg-primary-light/5 border border-primary-light/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all text-primary dark:text-white"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -161,17 +161,17 @@ const NovoMontador = () => {
                                     type="text"
                                     value={formData.chavePix}
                                     onChange={(e) => setFormData({ ...formData, chavePix: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    className="w-full bg-primary-light/5 border border-primary-light/10 rounded-xl px-4 py-3 focus:ring-2 focus:ring-accent/20 outline-none transition-all text-primary dark:text-white"
                                     placeholder="E-mail, CPF ou Aleatória"
                                 />
                             </div>
                         </div>
 
-                        <div className="pt-6 border-t border-slate-100 flex justify-end gap-4">
+                        <div className="pt-6 border-t border-primary-light/10 flex justify-end gap-4">
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="px-6 py-3 text-slate-600 font-medium hover:bg-slate-50 rounded-xl transition-all"
+                                className="px-6 py-3 text-primary-light/60 font-medium hover:bg-primary-light/5 rounded-xl transition-all"
                             >
                                 Cancelar
                             </button>
