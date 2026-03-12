@@ -31,7 +31,7 @@
     border-color: rgba(255, 255, 255, 0.08);
     color: #FAF8F5 !important;
     
-    h3, h4, span, p {
+    h3, h4, p {
       color: #FAF8F5 !important;
     }
   }
@@ -80,7 +80,7 @@
   }
 
   input::placeholder {
-    color: rgba(255, 255, 255, 0.3) !important;
+    color: rgba(255, 255, 255, 0.45) !important;
   }
 
   /* Filtro de imagens para evitar estouro de branco */

@@ -3,7 +3,11 @@ import React from 'react';
 const StatsCard = ({ title, value, icon, color, trend }) => {
     const iconColor = color ? color.replace('bg-', 'text-') : '';
     const trendClass = trend !== undefined
-        ? (trend > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600')
+        ? (trend > 0 
+            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
+            : trend < 0 
+                ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                : 'bg-white/5 text-white/40 border-white/10')
         : '';
 
     return (
@@ -13,7 +17,7 @@ const StatsCard = ({ title, value, icon, color, trend }) => {
                     {icon && React.cloneElement(icon, { className: iconColor })}
                 </div>
                 {trend !== undefined && (
-                    <span className={`text-xs font-mono font-bold tracking-widest px-3 py-1 rounded-full ${trendClass}`}>
+                    <span className={`text-[10px] font-mono font-bold tracking-[0.2em] px-2.5 py-1 rounded-lg border ${trendClass}`}>
                         {trend > 0 ? '+' : ''}{trend}%
                     </span>
                 )}

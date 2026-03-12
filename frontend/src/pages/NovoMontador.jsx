@@ -84,11 +84,10 @@ const NovoMontador = () => {
                             </div>
                         </div>
                     </div>
-
-                    <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1">Nome Completo</label>
+                    <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+                            <div className="space-y-2 col-span-1 md:col-span-2">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">Nome Completo</label>
                                 <input
                                     type="text"
                                     required
@@ -99,9 +98,9 @@ const NovoMontador = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
-                                    <Mail size={14} /> E-mail
+                            <div className="space-y-2 col-span-1">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2 whitespace-nowrap">
+                                    <Mail size={14} className="shrink-0" /> E-mail
                                 </label>
                                 <input
                                     type="email"
@@ -113,9 +112,9 @@ const NovoMontador = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
-                                    <Phone size={14} /> Telefone
+                            <div className="space-y-2 col-span-1">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2 whitespace-nowrap">
+                                    <Phone size={14} className="shrink-0" /> Telefone
                                 </label>
                                 <input
                                     type="text"
@@ -127,9 +126,9 @@ const NovoMontador = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
-                                    <CreditCard size={14} /> CPF
+                            <div className="space-y-2 col-span-1">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2 whitespace-nowrap">
+                                    <CreditCard size={14} className="shrink-0" /> CPF
                                 </label>
                                 <input
                                     type="text"
@@ -141,9 +140,9 @@ const NovoMontador = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2">
-                                    <Key size={14} /> Senha Inicial
+                            <div className="space-y-2 col-span-1">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 flex items-center gap-2 whitespace-nowrap">
+                                    <Key size={14} className="shrink-0" /> Senha Inicial
                                 </label>
                                 <input
                                     type="password"
@@ -155,8 +154,8 @@ const NovoMontador = () => {
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-slate-700 ml-1">Chave PIX (Opcional)</label>
+                            <div className="space-y-2 col-span-1 md:col-span-2">
+                                <label className="text-sm font-semibold text-primary-light/70 ml-1 whitespace-nowrap">Chave PIX (Opcional)</label>
                                 <input
                                     type="text"
                                     value={formData.chavePix}
