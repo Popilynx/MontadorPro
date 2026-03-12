@@ -378,7 +378,10 @@ const Landing = () => {
                     </div>
                 </div>
                 <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-background/10 text-center md:text-left flex flex-col md:flex-row justify-between text-xs font-mono text-white/40">
-                    <span>© 2026 MontadorPro Systems. All rights reserved.</span>
+                    <div className="flex flex-col gap-2">
+                        <span>© 2026 MontadorPro Systems. All rights reserved.</span>
+                        <span>Desenhado por <a href="https://portfolio-renato-beta.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors underline decoration-accent/30 underline-offset-4">Renato Rocha</a></span>
+                    </div>
                     <span className="mt-4 md:mt-0 uppercase tracking-widest">Strictly Precision.</span>
                 </div>
             </footer>

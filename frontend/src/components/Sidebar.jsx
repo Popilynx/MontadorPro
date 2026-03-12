@@ -91,6 +91,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     <LogOut size={16} />
                     <span>Desconectar</span>
                 </button>
+                <div className="mt-4 text-center">
+                    <a 
+                        href="https://portfolio-renato-beta.vercel.app/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-mono text-primary-light/20 hover:text-accent transition-colors tracking-tighter uppercase"
+                    >
+                        Developed by Renato Rocha
+                    </a>
+                </div>
             </div>
         </aside>
     );
