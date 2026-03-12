@@ -53,7 +53,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 </div>
                 <button 
                     onClick={() => setIsOpen(false)}
-                    className="lg:hidden text-white/50 hover:text-white"
+                    className="lg:hidden text-primary-light/50 hover:text-primary-light"
                 >
                     <CloseIcon size={24} />
                 </button>
@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         className={({ isActive }) =>
                             `flex items-center justify-between px-4 py-3 rounded-2xl transition-all duration-300 group ${isActive
                                 ? 'bg-accent/10 border border-accent/20 text-accent shadow-inner'
-                                : 'text-white/50 hover:bg-white/10 border border-transparent hover:text-white'
+                                : 'text-primary-light/50 hover:bg-white/10 border border-transparent hover:text-primary-light'
                             }`
                         }
                     >
@@ -83,10 +83,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 ))}
             </nav>
 
-            <div className="p-6 border-t border-white/10">
+            <div className="p-6 border-t border-primary-light/10">
                 <button
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-white/40 hover:bg-red-950/30 hover:text-red-400 rounded-2xl transition-all text-sm font-mono tracking-widest uppercase"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 text-primary-light/40 hover:bg-red-950/30 hover:text-red-400 rounded-2xl transition-all text-sm font-mono tracking-widest uppercase"
                 >
                     <LogOut size={16} />
                     <span>Desconectar</span>
@@ -96,7 +96,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         href="https://portfolio-renato-beta.vercel.app/" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-[10px] font-mono text-white/20 hover:text-accent transition-colors tracking-tighter uppercase"
+                        className="text-[10px] font-mono text-primary-light/20 hover:text-accent transition-colors tracking-tighter uppercase"
                     >
                         Developed by Renato Rocha
                     </a>
