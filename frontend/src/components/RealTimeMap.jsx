@@ -43,10 +43,17 @@ const BLUE_ICON = L.divIcon({
 const MapInvalidator = () => {
     const map = useMap();
     useEffect(() => {
-        const timer = setTimeout(() => {
-            map.invalidateSize();
-        }, 100);
-        return () => clearTimeout(timer);
+        // Múltiplos disparos para garantir que o mapa entenda o novo tamanho
+        // após as animações de entrada e renderização mobile
+        const timer1 = setTimeout(() => map.invalidateSize(), 150);
+        const timer2 = setTimeout(() => map.invalidateSize(), 600);
+        const timer3 = setTimeout(() => map.invalidateSize(), 1200);
+        
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+            clearTimeout(timer3);
+        };
     }, [map]);
     return null;
 };
@@ -68,11 +75,11 @@ const RealTimeMap = ({ montadores }) => {
         : defaultCenter;
 
     return (
-        <div style={{ height: '100%', width: '100%', minHeight: '300px' }}>
+        <div className="w-full h-full min-h-[350px] relative z-0">
             <MapContainer
                 center={center}
                 zoom={13}
-                style={{ height: '100%', width: '100%', minHeight: '300px', borderRadius: '1rem' }}
+                style={{ height: '100%', width: '100%', minHeight: '350px', borderRadius: '1rem', zIndex: 0 }}
                 scrollWheelZoom={false}
             >
                 {/* CartoDB Voyager — HTTPS nativo, sem rate-limit agressivo, visual neutro e bonito */}

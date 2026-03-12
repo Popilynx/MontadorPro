@@ -131,7 +131,7 @@ const Dashboard = () => {
                             LIVE
                         </span>
                     </div>
-                    <div className="h-[300px] md:h-[400px] rounded-2xl overflow-hidden border border-primary-light/20 relative z-10 shadow-inner">
+                    <div className="h-[350px] md:h-[400px] rounded-2xl overflow-hidden border border-primary-light/20 relative z-10 shadow-inner">
                         {!loading && <RealTimeMap montadores={montadores} />}
                     </div>
                     <p className="text-xs font-mono tracking-widest uppercase text-background/40 mt-6 text-center relative z-10">Monitoramento satelital ativo.</p>
