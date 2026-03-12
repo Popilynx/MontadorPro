@@ -61,7 +61,7 @@ router.post('/chegada', authMiddleware, async (req, res) => {
     const agendado = new Date(os.dataInstalacao);
     const diffMinutos = Math.abs((agora - agendado) / 1000 / 60);
     
-    if (diffMinutos > 15) {
+    if (diffMinutos > 30) {
       return res.status(403).json({ 
         error: `Fora da janela de tempo. Seu agendamento é às ${agendado.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.` 
       });

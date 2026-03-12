@@ -12,6 +12,7 @@ import Historico from './pages/Historico';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import VerificarEmail from './pages/VerificarEmail';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Guard para rotas exclusivas de administradores
 const AdminRoute = ({ children }) => {
@@ -39,6 +40,7 @@ function App() {
 
   return (
     <Router>
+      <PWAInstallPrompt />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />

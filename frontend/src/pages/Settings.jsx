@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { gsap } from 'gsap';
+import { subscribeToPush, unsubscribeFromPush } from '../utils/pushNotifications';
 
 const Settings = () => {
     const navigate = useNavigate();
@@ -45,6 +46,13 @@ const Settings = () => {
                 alert('Você precisa permitir notificações no navegador para ativar esta opção.');
                 return;
             }
+            const success = await subscribeToPush();
+            if (!success) {
+                alert('Erro ao ativar notificações no servidor.');
+                return;
+            }
+        } else {
+            await unsubscribeFromPush();
         }
         setNotifications(newValue);
         localStorage.setItem('config_notifications', newValue);

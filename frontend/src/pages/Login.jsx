@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LogIn, Phone, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import api from '../api/api';
+import { subscribeToPush } from '../utils/pushNotifications';
 
 const Login = () => {
     const [telefone, setTelefone] = useState('');
@@ -20,6 +21,12 @@ const Login = () => {
 
             localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('montador', JSON.stringify(montador));
+            
+            // Tenta inscrever para push automaticamente se as notificações estiverem ligadas (default true)
+            if (localStorage.getItem('config_notifications') !== 'false') {
+                subscribeToPush().catch(err => console.error('Erro push login:', err));
+            }
+
             window.location.href = '/dashboard';
         } catch (err) {
             setError(err.response?.data?.error || 'Erro ao realizar login. Verifique seus dados.');

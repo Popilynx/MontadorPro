@@ -10,6 +10,7 @@ const osRoutes = require('./routes/osRoutes');
 const conviteRoutes = require('./routes/conviteRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const execucaoRoutes = require('./routes/execucaoRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/v1/os', osRoutes);
 app.use('/api/v1/convites', conviteRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/execucao', execucaoRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 // Servir fotos enviadas (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -68,12 +70,24 @@ app.use((req, res, next) => {
 
 // Tratamento de erros global
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('❌ Error:', err.message);
+    
     // Zod validation errors
     if (err.name === 'ZodError') {
         return res.status(400).json({ error: 'Dados inválidos', detalhes: err.flatten().fieldErrors });
     }
-    res.status(err.status || 500).json({ error: err.message || 'Algo deu errado!' });
+
+    // Prisma specific errors
+    if (err.code === 'P2002') {
+        const field = err.meta?.target?.[0] || 'campo';
+        return res.status(400).json({ error: `Já existe um registro com este ${field}.` });
+    }
+
+    if (err.code === 'P2025') {
+        return res.status(404).json({ error: 'Registro não encontrado para atualização.' });
+    }
+
+    res.status(err.status || 500).json({ error: err.message || 'Algo deu errado no servidor!' });
 });
 
 module.exports = app;
