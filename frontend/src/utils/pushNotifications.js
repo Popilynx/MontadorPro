@@ -35,9 +35,18 @@ export async function subscribeToPush() {
     
     // Se não existir, cria uma nova
     if (!subscription) {
-      const publicVapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      // Busca a chave pública dinamicamente do backend
+      let publicVapidKey;
+      try {
+        const response = await api.get('/notifications/vapid-public-key');
+        publicVapidKey = response.data.publicKey;
+      } catch (err) {
+        console.error('Erro ao buscar chave VAPID do servidor:', err);
+        return;
+      }
+
       if (!publicVapidKey) {
-        console.error('VITE_VAPID_PUBLIC_KEY não configurada no .env do frontend.');
+        console.error('VAPID_PUBLIC_KEY não retornada pelo servidor.');
         return;
       }
 

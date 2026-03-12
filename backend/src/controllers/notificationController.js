@@ -52,4 +52,15 @@ async function unsubscribe(req, res) {
   }
 }
 
-module.exports = { subscribe, unsubscribe };
+/**
+ * Retorna a chave pública VAPID para o frontend
+ */
+async function getPublicKey(req, res) {
+  const publicKey = process.env.VAPID_PUBLIC_KEY;
+  if (!publicKey) {
+    return res.status(500).json({ error: 'VAPID_PUBLIC_KEY não configurada no servidor.' });
+  }
+  res.json({ publicKey });
+}
+
+module.exports = { subscribe, unsubscribe, getPublicKey };
