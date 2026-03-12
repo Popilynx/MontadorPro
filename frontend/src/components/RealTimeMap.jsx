@@ -82,12 +82,11 @@ const RealTimeMap = ({ montadores }) => {
                 style={{ height: '100%', width: '100%', minHeight: '350px', borderRadius: '1rem', zIndex: 0 }}
                 scrollWheelZoom={false}
             >
-                {/* CartoDB Voyager — Sem {r} para evitar falhas em dispositivos que não reportam retina corretamente */}
+                {/* OpenStreetMap Standard — O mais compatível para testes e uso geral */}
                 <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
-                    subdomains="abcd"
-                    maxZoom={20}
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    maxZoom={19}
                 />
 
                 {/* Componente que força o mapa a recalcular o tamanho */}

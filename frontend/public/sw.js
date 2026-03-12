@@ -1,4 +1,4 @@
-const CACHE_NAME = 'montador-pro-v1';
+const CACHE_NAME = 'montador-pro-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
