@@ -32,8 +32,8 @@ self.addEventListener('activate', (event) => {
 
 // Interceptação de Fetch (Network First para API, Stale-While-Revalidate para estáticos)
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('/api/')) {
-    // Para API: tenta ir na rede primeiro
+  if (event.request.url.includes('/api/') || event.request.url.includes('basemaps.cartocdn.com') || event.request.url.includes('openstreetmap.org')) {
+    // Para API e Mapas: tenta ir na rede primeiro e não faz cache agressivo de milhares de tiles
     event.respondWith(
       fetch(event.request).catch(() => caches.match(event.request))
     );
