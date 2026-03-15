@@ -17,16 +17,16 @@ import DetalhesOrdemModal from '../components/DetalhesOrdemModal';
 const Dashboard = () => {
     const statsCacheKey = 'dashboard_stats_v2';
     const defaultStats = [
-        { title: 'Ordens ConcluÃ­das', value: '0', icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
+        { title: 'Ordens Concluídas', value: '0', icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
         { title: 'Montadores Ativos', value: '0', icon: <Users />, color: 'bg-emerald-500', trend: 0 },
-        { title: 'Tempo MÃ©dio', value: '0h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
+        { title: 'Tempo Médio', value: '0h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
         { title: 'Faturamento Mes', value: 'R$ 0', icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
     ];
 
     const buildStats = (data) => ([
-        { title: 'Ordens ConcluÃ­das', value: data?.totalOS ?? 0, icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
-        { title: 'Montadores Ativos', value: data?.totalMontadores ?? 0, icon: <Users />, color: 'bg-emerald-500', trend: 0 },
-        { title: 'Tempo MÃ©dio', value: '2.5h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
+        { title: 'Ordens Concluídas', value: data?.concluidas ?? 0, icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
+        { title: 'Montadores Ativos', value: data?.montadoresAtivos ?? 0, icon: <Users />, color: 'bg-emerald-500', trend: 0 },
+        { title: 'Tempo Médio', value: '2.5h', icon: <Clock />, color: 'bg-amber-500', trend: 0 },
         { title: 'Faturamento Total', value: `R$ ${((data?.faturamento ?? 0)).toLocaleString('pt-BR')}`, icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
     ]);
 
@@ -52,14 +52,10 @@ const Dashboard = () => {
     const fetchStats = async () => {
         if (!statsReady) setStatsLoading(true);
         try {
-            const { data } = await api.get('/admin/stats');
+            const { data } = await api.get('/os/stats/dashboard');
             const nextStats = buildStats(data);
             setStats(nextStats);
-            writeCache(statsCacheKey, {
-                totalOS: data?.totalOS ?? 0,
-                totalMontadores: data?.totalMontadores ?? 0,
-                faturamento: data?.faturamento ?? 0
-            });
+            writeCache(statsCacheKey, data);
             setStatsReady(true);
         } catch (err) {
             console.error('Erro ao buscar stats:', err);
@@ -71,7 +67,7 @@ const Dashboard = () => {
     const fetchOrders = async () => {
         if (!ordersReady) setOrdersLoading(true);
         try {
-            const { data } = await api.get('/admin/ordens?limit=3');
+            const { data } = await api.get('/os?limit=3');
             const ordersArray = Array.isArray(data) ? data : (data.ordens || []);
             const nextOrders = ordersArray.slice(0, 3);
             setRecentOrders(nextOrders);
@@ -125,7 +121,7 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                 <div className="lg:col-span-2 bg-white dark:bg-[#16161E] rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-8 shadow-xl shadow-primary/5 border border-primary-light/5 dark:border-white/10">
                     <div className="flex items-center justify-between mb-8">
-                        <h4 className="text-xl font-sans font-bold text-primary dark:text-white tracking-tight">Ordens de ServiÃ§o Recentes</h4>
+                        <h4 className="text-xl font-sans font-bold text-primary dark:text-white tracking-tight">Ordens de Serviço Recentes</h4>
                         <button 
                             onClick={() => navigate('/ordens')}
                             className="text-primary-light/50 dark:text-white/40 text-xs font-mono tracking-widest uppercase hover:text-accent transition-colors"
@@ -157,7 +153,7 @@ const Dashboard = () => {
                                         </div>
                                         <div>
                                             <p className="font-sans font-bold text-primary dark:text-white">{os.numero || os.numero_os || `OS #${os.id.toString().padStart(4, '0')}`}</p>
-                                            <p className="text-sm text-primary-light/60 dark:text-white/50 font-medium mt-1">{os.cliente?.nome || os.cliente_nome || 'Cliente nÃ£o identificado'}</p>
+                                            <p className="text-sm text-primary-light/60 dark:text-white/50 font-medium mt-1">{os.cliente?.nome || os.cliente_nome || 'Cliente não identificado'}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
