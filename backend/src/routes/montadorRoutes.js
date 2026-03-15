@@ -3,6 +3,7 @@ const router = express.Router();
 const prisma = require('../config/db');
 const authMiddleware = require('../middlewares/authMiddleware');
 const { comparePassword, hashPassword } = require('../utils/auth');
+const axios = require('axios');
 
 // GET /api/v1/montadores/me — Perfil completo do montador autenticado
 router.get('/me', authMiddleware, async (req, res) => {
@@ -148,15 +149,36 @@ router.patch('/location', authMiddleware, async (req, res) => {
     }
 
     try {
+        let cidade = null;
+        let estado = null;
+
+        // Tentar obter cidade/estado via Reverse Geocoding (Nominatim)
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`;
+            const response = await axios.get(url, {
+                headers: { 'User-Agent': 'MontadorPro/1.0' }
+            });
+
+            if (response.data && response.data.address) {
+                const addr = response.data.address;
+                cidade = addr.city || addr.town || addr.village || addr.municipality || addr.suburb || addr.city_district;
+                estado = addr.state;
+            }
+        } catch (geoErr) {
+            console.error('Erro no geocoding reverso:', geoErr.message);
+        }
+
         await prisma.montador.update({
             where: { id: parseInt(req.montadorId) },
             data: {
                 lat: parseFloat(lat),
                 lng: parseFloat(lng),
-                status: 'disponivel'
+                status: 'disponivel',
+                ...(cidade && { cidade }),
+                ...(estado && { estado })
             }
         });
-        res.json({ message: 'Localização atualizada com sucesso.' });
+        res.json({ message: 'Localização atualizada com sucesso.', cidade, estado });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao atualizar localização' });
     }
@@ -172,15 +194,35 @@ router.patch('/me/localizacao', authMiddleware, async (req, res) => {
     }
 
     try {
+        let cidade = null;
+        let estado = null;
+
+        try {
+            const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10`;
+            const response = await axios.get(url, {
+                headers: { 'User-Agent': 'MontadorPro/1.0' }
+            });
+
+            if (response.data && response.data.address) {
+                const addr = response.data.address;
+                cidade = addr.city || addr.town || addr.village || addr.municipality || addr.suburb || addr.city_district;
+                estado = addr.state;
+            }
+        } catch (geoErr) {
+            console.error('Erro no geocoding reverso legacy:', geoErr.message);
+        }
+
         await prisma.montador.update({
             where: { id: parseInt(req.montadorId) },
             data: {
                 lat: parseFloat(lat),
                 lng: parseFloat(lng),
-                status: 'disponivel'
+                status: 'disponivel',
+                ...(cidade && { cidade }),
+                ...(estado && { estado })
             }
         });
-        res.json({ message: 'Localização atualizada com sucesso.' });
+        res.json({ message: 'Localização atualizada com sucesso.', cidade, estado });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao atualizar localização' });
     }

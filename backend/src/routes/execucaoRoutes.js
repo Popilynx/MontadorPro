@@ -20,9 +20,17 @@ const storage = multer.diskStorage({
   }
 });
 
+const maxFotoMb = parseInt(process.env.MAX_FOTO_MB || '5', 10);
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  limits: { fileSize: maxFotoMb * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!allowed.includes(file.mimetype)) {
+      return cb(new Error('Formato de arquivo nao permitido.'));
+    }
+    cb(null, true);
+  }
 });
 
 // ─── GET /api/v1/execucao/ativa — Execução ativa com dados da OS ─────────
@@ -107,28 +115,60 @@ router.post('/:id/fotos', authMiddleware, upload.array('fotos', 10), async (req,
 
 // ─── POST /api/v1/execucao/:id/finalizar ──────────────────────────────────
 router.post('/:id/finalizar', authMiddleware, async (req, res) => {
+  const { nota, observacao } = req.body;
+
   try {
     // Validar mínimo de fotos (ex: 4 conforme doc)
     const execucao = await prisma.execucao.findFirst({
-      where: { ordemId: parseInt(req.params.id), montadorId: parseInt(req.montadorId) },
+      where: { 
+        ordemId: parseInt(req.params.id), 
+        montadorId: parseInt(req.montadorId),
+        status: 'em_andamento'
+      },
       include: { _count: { select: { fotos: true } } }
     });
 
-    if (execucao?._count.fotos < 4) {
+    if (!execucao) {
+      return res.status(404).json({ error: 'Execução ativa não encontrada.' });
+    }
+
+    if (execucao._count.fotos < 4) {
       return res.status(400).json({ error: 'Mínimo de 4 fotos obrigatório.' });
     }
 
-    await prisma.$transaction([
-      prisma.ordemServico.update({ where: { id: parseInt(req.params.id) }, data: { status: 'concluida' } }),
-      prisma.execucao.updateMany({
-        where: { ordemId: parseInt(req.params.id), montadorId: parseInt(req.montadorId) },
-        data: { status: 'concluida', conclusaoAt: new Date() }
-      })
-    ]);
+    await prisma.$transaction(async (tx) => {
+      // 1. Atualizar status da Ordem
+      await tx.ordemServico.update({ 
+        where: { id: parseInt(req.params.id) }, 
+        data: { status: 'concluida' } 
+      });
 
-    res.json({ message: 'Serviço finalizado!' });
+      // 2. Atualizar status da Execução
+      await tx.execucao.update({
+        where: { id: execucao.id },
+        data: { 
+          status: 'concluida', 
+          conclusaoAt: new Date() 
+        }
+      });
+
+      // 3. Criar Avaliação (Tratamento)
+      if (nota !== undefined) {
+        await tx.avaliacao.create({
+          data: {
+            ordemId: parseInt(req.params.id),
+            montadorId: parseInt(req.montadorId),
+            nota: parseInt(nota),
+            comentario: observacao || ''
+          }
+        });
+      }
+    });
+
+    res.json({ message: 'Serviço finalizado com sucesso!' });
   } catch (err) {
-    res.status(500).json({ error: 'Erro ao finalizar.' });
+    console.error('Erro ao finalizar OS:', err);
+    res.status(500).json({ error: 'Erro ao finalizar serviço.' });
   }
 });
 

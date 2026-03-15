@@ -108,3 +108,27 @@ Garantir o fluxo e o comportamento de carga por todo o ciclo de vida do Front (M
 - [x] **TSK-7.4:** Integrar ações globais (Logout, Limpeza de Cache local).
 - [x] **TSK-7.5:** Validar persistência de preferências do usuário no localStorage/DB.
 - [x] **TSK-7.6:** Ajustar contraste e legibilidade global (Modo Dark e Inputs).
+
+---
+
+## MÃ³dulo 8: MigraÃ§Ã£o Completa da Base `testenf` para o Projeto Atual [EM ANDAMENTO]
+Objetivo: garantir que **todas** as ferramentas e funcionalidades do `testenf` existam no backend/frontend modernos, mantendo o visual atual.
+
+- [ ] **TSK-8.1:** Inventariar 100% das rotas, funcionalidades e regras do `testenf` e mapear equivalentes no backend atual.
+- [ ] **TSK-8.2:** Alinhar o esquema do banco (Prisma) com o `schema-v2.sql` (admins, montadores completos, ordens_servico, convites, histÃ³rico).
+- [ ] **TSK-8.3:** Implementar geraÃ§Ã£o automÃ¡tica de `numero_os` (trigger no banco ou lÃ³gica equivalente e segura).
+- [ ] **TSK-8.4:** Implementar autenticaÃ§Ã£o admin equivalente ao `testenf` (login + sessÃ£o/token).
+- [ ] **TSK-8.5:** Portar as rotas administrativas do `testenf` para `/api/v1/admin` no backend atual.
+- [ ] **TSK-8.6:** Portar a lÃ³gica de criar OS com geocoding + convite automÃ¡tico (3 montadores mais prÃ³ximos + WhatsApp).
+- [ ] **TSK-8.7:** Portar as rotas pÃºblicas de convites com expiraÃ§Ã£o e bloqueio concorrente.
+- [ ] **TSK-8.8:** Implementar o fluxo completo de aprovaÃ§Ã£o/rejeiÃ§Ã£o de montadores com documentos.
+- [ ] **TSK-8.9:** Implementar limpeza automÃ¡tica de convites/OS expiradas como job/cron no backend atual.
+- [ ] **TSK-8.10:** Ajustar regras de status de OS para equivaler ao `testenf` (pendente, agendada, em_andamento, concluida).
+- [ ] **TSK-8.11:** Integrar upload/armazenamento de documentos no backend atual e expor URLs seguras.
+- [ ] **TSK-8.12:** Portar o painel admin do `admin-v2.html` para React moderno mantendo o visual atual (tabs, cards, formulÃ¡rios, filtros).
+- [ ] **TSK-8.13:** Portar o formulÃ¡rio "Nova OS" completo com novos campos e validaÃ§Ãµes.
+- [ ] **TSK-8.14:** Implementar mÃ¡scara de telefone e helpers de UX do `testenf` no frontend moderno.
+- [ ] **TSK-8.15:** Corrigir inconsistÃªncias de schema vs cÃ³digo (campos inexistentes/nomes divergentes).
+- [ ] **TSK-8.16:** Revisar seguranÃ§a end-to-end: CORS restrito, rate limit global, sanitizaÃ§Ã£o, CSP, validaÃ§Ãµes.
+- [ ] **TSK-8.17:** Atualizar integraÃ§Ãµes externas (Resend, Push, WhatsApp links) para os novos fluxos.
+- [ ] **TSK-8.18:** Testes de sanidade com endpoints principais e fluxos completos no frontend moderno.

@@ -7,25 +7,44 @@ const Geolocator = () => {
             try {
                 const { latitude, longitude } = position.coords;
                 await api.patch('/montadores/location', { latitude, longitude });
-                console.log('Localização enviada:', latitude, longitude);
+                console.log('%c[GPS] Localização enviada com sucesso:', 'color: #10b981; font-weight: bold;', latitude, longitude);
             } catch (err) {
-                console.error('Erro ao enviar localização:', err);
+                console.error('[GPS] Erro ao enviar localização para o servidor:', err);
             }
         };
 
         const handleError = (error) => {
-            console.error('Erro de geolocalização:', error);
+            let errorMsg = 'Erro desconhecido';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMsg = 'Permissão negada pelo usuário (Verifique se o site tem permissão para usar GPS)';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMsg = 'Informação de localização indisponível';
+                    break;
+                case error.TIMEOUT:
+                    errorMsg = 'Tempo esgotado ao tentar obter localização';
+                    break;
+                default:
+                    errorMsg = error.message;
+            }
+            console.warn(`%c[GPS] ${errorMsg}`, 'color: #f59e0b; font-weight: bold;');
         };
 
-        // Solicita permissão e começa a observar
         if (navigator.geolocation) {
+            console.log('%c[GPS] Iniciando rastreamento...', 'color: #3b82f6; font-weight: bold;');
             const watchId = navigator.geolocation.watchPosition(updateLocation, handleError, {
                 enableHighAccuracy: true,
-                maximumAge: 30000,
-                timeout: 27000
+                maximumAge: 10000,
+                timeout: 5000
             });
 
-            return () => navigator.geolocation.clearWatch(watchId);
+            return () => {
+                console.log('[GPS] Parando rastreamento.');
+                navigator.geolocation.clearWatch(watchId);
+            };
+        } else {
+            console.error('[GPS] Navegador não suporta geolocalização.');
         }
     }, []);
 

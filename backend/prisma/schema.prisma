@@ -21,10 +21,37 @@ model Montador {
   lat                Float?
   lng                Float?
   email              String?
-  codigoVerificacao  String?
+  rg                 String?
+  nascimento         DateTime?
+  cep                String?
+  endereco           String?
+  estado             String?             @default("GO")
+  ipOrigem           String?             @map("ip_origem")
+  localizacaoConfirmada Boolean?         @default(false) @map("localizacao_confirmada")
+  nivelExperiencia   String?             @map("nivel_experiencia") // simples, medio_complexo, luxo
+  anosExperiencia    String?             @map("anos_experiencia")
+  cnpjStatus         String?             @map("cnpj_status") // nao, sim
+  cnpj               String?
+  especialidades     String[]            @default([])
+  ferramentas        String?
+  referencias        String?
+  disponibilidade    String?
+  origem             String?
+  observacaoRejeicao String?             @map("observacao_rejeicao")
+  codigoVerificacao String?             @map("codigo_verificacao")
+  
+  
+  docRg              String?             @db.Text @map("doc_rg")
+  docCpf             String?             @db.Text @map("doc_cpf")
+  docComprovante     String?             @db.Text @map("doc_comprovante")
+  docFoto            String?             @db.Text @map("doc_foto")
+  docAntecedente     String?             @map("doc_antecedente")
+  docPortfolio       String[]            @default([]) @map("doc_portfolio")
+  
   role               String              @default("montador")
   fotoUrl            String?             @map("foto_url")
   emailVerificado    Boolean             @default(false)
+  aprovadoEm         DateTime?           @map("aprovado_em")
   createdAt          DateTime?           @default(now())
   updatedAt          DateTime?           @updatedAt
 
@@ -83,6 +110,12 @@ model OrdemServico {
   id             Int         @id @default(autoincrement())
   numero         String?     @unique
   descricao      String
+  clienteNome    String?     @map("cliente_nome")
+  clienteContato String?     @map("cliente_contato")
+  cidade         String?
+  estado         String?
+  tipoProjeto    String?     @map("tipo_projeto")
+  observacoes    String?
   endereco       String
   lat            Float
   lng            Float

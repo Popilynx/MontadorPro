@@ -2,25 +2,45 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../api/api';
-import { User, Phone, MapPin, Camera, Save, ArrowLeft, Clipboard, TrendingUp } from 'lucide-react';
+import { readCache, writeCache } from '../utils/cache';
+import { User, Phone, MapPin, Camera, Save, ArrowLeft, Clipboard, TrendingUp, FileText } from 'lucide-react';
 
 const Profile = () => {
     const { id } = useParams();
     const fileInputRef = useRef(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const cacheKey = id ? `profile_${id}_v1` : 'profile_me_v1';
+    const initialCache = readCache(cacheKey, null);
+    const [user, setUser] = useState(() => initialCache);
+    const [loading, setLoading] = useState(() => !initialCache);
     const [saving, setSaving] = useState(false);
-    const [formData, setFormData] = useState({
-        nome: '',
-        telefone: '',
-        cidade: '',
-        foto_url: ''
-    });
+    const [formData, setFormData] = useState(() => ({
+        nome: initialCache?.nome || '',
+        telefone: initialCache?.telefone || '',
+        cidade: initialCache?.cidade || '',
+        estado: initialCache?.estado || '',
+        foto_url: initialCache?.foto_url || ''
+    }));
 
     const isOwnProfile = !id;
+    const currentUser = JSON.parse(localStorage.getItem('montador') || '{}');
+    const isAdmin = currentUser?.role === 'admin';
 
     useEffect(() => {
         const fetchUser = async () => {
+            const cached = readCache(cacheKey, null);
+            if (cached) {
+                setUser(cached);
+                setFormData({
+                    nome: cached.nome || '',
+                    telefone: cached.telefone || '',
+                    cidade: cached.cidade || '',
+                    estado: cached.estado || '',
+                    foto_url: cached.foto_url || ''
+                });
+                setLoading(false);
+            } else {
+                setLoading(true);
+            }
             try {
                 const endpoint = id ? `/montadores/${id}` : '/montadores/me';
                 const res = await api.get(endpoint);
@@ -29,9 +49,11 @@ const Profile = () => {
                     nome: res.data.nome || '',
                     telefone: res.data.telefone || '',
                     cidade: res.data.cidade || '',
+                    estado: res.data.estado || '',
                     foto_url: res.data.foto_url || ''
                 });
                 // Sincronizar com localStorage apenas se for o próprio perfil
+                writeCache(cacheKey, res.data);
                 if (isOwnProfile) {
                     localStorage.setItem('montador', JSON.stringify(res.data));
                 }
@@ -73,6 +95,7 @@ const Profile = () => {
                 nome: res.data.nome || '',
                 telefone: res.data.telefone || '',
                 cidade: res.data.cidade || '',
+                estado: res.data.estado || '',
                 foto_url: res.data.foto_url || ''
             });
             // Sincronizar com localStorage após salvar
@@ -186,13 +209,13 @@ const Profile = () => {
                                                 <input
                                                     type="text"
                                                     name="cidade"
-                                                    value={formData.cidade}
-                                                    onChange={handleChange}
-                                                    readOnly={!isOwnProfile}
+                                                    value={formData.estado ? `${formData.cidade}, ${formData.estado}` : formData.cidade}
+                                                    readOnly={true}
                                                     placeholder="Cidade, UF"
-                                                    className={`w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-14 pr-4 transition-all focus:border-accent focus:ring-1 focus:ring-accent outline-none font-sans text-lg text-white ${!isOwnProfile ? 'cursor-not-allowed opacity-70' : ''}`}
+                                                    className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 pl-14 pr-4 transition-all focus:border-accent focus:ring-1 focus:ring-accent outline-none font-sans text-lg text-white cursor-not-allowed opacity-80"
                                                 />
                                             </div>
+                                            <p className="text-[10px] text-white/40 pl-1">Preenchido automaticamente pelo GPS</p>
                                         </div>
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-mono text-accent uppercase tracking-[0.2em] pl-1 font-bold">Nível de Acesso</label>
@@ -283,6 +306,47 @@ const Profile = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Documentos Section */}
+                {(isOwnProfile || isAdmin) && (
+                    <div className="mt-20">
+                        <div className="flex items-center justify-between mb-10 border-b border-primary-light/5 pb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center text-accent">
+                                    <FileText size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-3xl font-bold font-drama italic text-primary leading-tight">Documentos <span className="text-accent underline underline-offset-4 decoration-accent/20">Registrados</span></h3>
+                                    <p className="text-xs font-mono text-primary-light/40 uppercase tracking-[0.2em] mt-1">Arquivos de Validação de Identidade</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[
+                                { key: 'docRg', label: 'Documento (Frente)' },
+                                { key: 'docCpf', label: 'Documento (Verso)' },
+                                { key: 'docComprovante', label: 'Comprovante Resid.' }
+                            ].map(doc => (
+                                <div key={doc.key} className="bg-white rounded-3xl p-6 border border-primary-light/5 shadow-xl group">
+                                    <p className="text-xs font-mono text-primary-light/40 uppercase tracking-widest font-bold mb-4">{doc.label}</p>
+                                    {user?.[doc.key] ? (
+                                        <div className="relative overflow-hidden rounded-2xl cursor-pointer" onClick={() => window.open(user[doc.key], '_blank')}>
+                                            <img src={user[doc.key]} alt={doc.label} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
+                                            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/20 transition-colors flex items-center justify-center">
+                                                <span className="opacity-0 group-hover:opacity-100 text-white font-mono text-xs uppercase tracking-widest font-bold bg-primary/80 px-4 py-2 rounded-full backdrop-blur-md transition-opacity">Visualizar</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="w-full h-48 bg-primary/5 rounded-2xl flex items-center justify-center border border-primary-light/10 border-dashed">
+                                            <span className="text-xs font-mono text-primary-light/40 uppercase tracking-widest px-4 text-center">Nenhum enviado</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );

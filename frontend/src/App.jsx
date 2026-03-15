@@ -12,12 +12,13 @@ import Historico from './pages/Historico';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import VerificarEmail from './pages/VerificarEmail';
+import CadastroMontador from './pages/CadastroMontador';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Guard para rotas exclusivas de administradores
 const AdminRoute = ({ children }) => {
   const user = JSON.parse(localStorage.getItem('montador') || '{}');
-  if (user?.role !== 'admin') return <Navigate to="/login" replace />;
+  if (user?.role?.toLowerCase() !== 'admin') return <Navigate to="/login" replace />;
   return children;
 };
 
@@ -55,6 +56,7 @@ function App() {
         <Route path="/perfil" element={<Profile />} />
         <Route path="/configuracoes" element={<AdminRoute><Settings /></AdminRoute>} />
         <Route path="/verificar-email" element={<VerificarEmail />} />
+        <Route path="/cadastro" element={<CadastroMontador />} />
       </Routes>
     </Router>
   );

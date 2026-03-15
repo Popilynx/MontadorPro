@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import api from '../api/api';
+import { readCache, writeCache } from '../utils/cache';
 import {
     TrendingUp, DollarSign, Calendar, Award,
     ArrowUpRight, ArrowDownRight, BarChart2
@@ -78,9 +79,11 @@ const MetricCard = ({ label, value, sub, icon: Icon, trend }) => (
 
 // ─── Componente Principal ───────────────────────────────────────────────────
 const Historico = () => {
-    const [dados, setDados] = useState(null);
-    const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
-    const [loading, setLoading] = useState(true);
+    const currentYear = new Date().getFullYear();
+    const initialCache = readCache(`historico_${currentYear}_v1`, null);
+    const [dados, setDados] = useState(() => initialCache);
+    const [anoSelecionado, setAnoSelecionado] = useState(currentYear);
+    const [loading, setLoading] = useState(() => !initialCache);
     const [erro, setErro] = useState(null);
 
     const mesAtual = new Date().getMonth() + 1;
@@ -89,15 +92,21 @@ const Historico = () => {
     // Buscar dados reais
     useEffect(() => {
         const fetchDados = async () => {
-            setLoading(true);
+            const cacheKey = `historico_${anoSelecionado}_v1`;
+            const cached = readCache(cacheKey, null);
+            if (cached) {
+                setDados(cached);
+            }
+            setLoading(!cached);
             setErro(null); // Clear previous errors
             try {
                 const { data } = await api.get(`/admin/historico?ano=${anoSelecionado}`);
                 setDados(data);
+                writeCache(cacheKey, data);
             } catch (err) {
                 console.error('Erro ao buscar histórico:', err);
                 setErro('Não foi possível carregar o histórico. Tente novamente.');
-                setDados(null); // Ensure dados is null on error
+                if (!cached) setDados(null); // Ensure dados is null on error
             } finally {
                 setLoading(false);
             }

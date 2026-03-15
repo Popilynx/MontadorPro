@@ -8,7 +8,7 @@ const EditMontadorModal = ({ montador, onClose, onUpdate }) => {
         telefone: montador.telefone || '',
         cidade: montador.cidade || '',
         role: montador.role || 'montador',
-        status: montador.status || 'offline'
+        status: montador.status || 'pendente'
     });
     const [loading, setLoading] = useState(false);
 
@@ -104,9 +104,11 @@ const EditMontadorModal = ({ montador, onClose, onUpdate }) => {
                                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                                     className="w-full bg-background border border-primary-light/10 rounded-2xl px-5 py-3.5 font-sans text-primary focus:ring-1 focus:ring-accent outline-none appearance-none transition-all cursor-pointer"
                                 >
-                                    <option value="online">Online</option>
-                                    <option value="ocupado">Ocupado</option>
-                                    <option value="offline">Offline</option>
+                                    <option value="pendente">Pendente</option>
+                                    <option value="aprovado">Aprovado</option>
+                                    <option value="rejeitado">Rejeitado</option>
+                                    <option value="disponivel">Disponivel</option>
+                                    <option value="indisponivel">Indisponivel</option>
                                 </select>
                             </div>
                         </div>

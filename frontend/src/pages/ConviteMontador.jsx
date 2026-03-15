@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/api';
+import { readCache, writeCache } from '../utils/cache';
 
 // ─── Timer SVG Arc ─────────────────────────────────────────────────────────
 const TimerArc = ({ totalSeconds, timeLeft, status }) => {
@@ -89,6 +90,7 @@ const PhotoGrid = ({ fotos, onAdd, onRemove }) => {
                     ref={inputRef}
                     type="file"
                     accept="image/*"
+                    capture="environment"
                     multiple
                     className="hidden"
                     onChange={handleFiles}
@@ -144,6 +146,86 @@ const ConviteMontador = () => {
     const [checkedIn, setCheckedIn] = useState(false);
     const [performingCheckIn, setPerformingCheckIn] = useState(false);
 
+    const [status, setStatus] = useState('pending');
+    const [timeLeft, setTimeLeft] = useState(1200); // 20 min in seconds
+    const [fotos, setFotos] = useState([]);
+    const [nota, setNota] = useState(0);
+    const [observacao, setObservacao] = useState('');
+    const [finalizado, setFinalizado] = useState(false);
+    const [osDisponivel, setOsDisponivel] = useState([]);
+    const [loadingDisponivel, setLoadingDisponivel] = useState(false);
+    const [aceitando, setAceitando] = useState(null);
+
+    const mapStatus = (s) => {
+        if (!s) return 'pending';
+        const value = s.toString().toLowerCase();
+        if (value === 'pendente' || value === 'enviado') return 'pending';
+        if (value === 'aceito') return 'accepted';
+        if (value === 'expirado') return 'expired';
+        if (value === 'recusado') return 'declined';
+        return value;
+    };
+
+    const applyConviteData = (data) => {
+        if (!data) return;
+        setOsData(data);
+        setStatus(mapStatus(data.status));
+        if (data.status === 'pendente' || data.status === 'enviado') {
+            const exp = new Date(data.expira_em).getTime();
+            const now = new Date().getTime();
+            const calcLeft = Math.floor((exp - now) / 1000);
+            setTimeLeft(calcLeft > 0 ? calcLeft : 0);
+        }
+    };
+
+    useEffect(() => {
+        if (id) {
+            const cached = readCache(`convite_${id}_v1`, null);
+            if (cached) {
+                applyConviteData(cached);
+                setLoading(false);
+            }
+            fetchOS();
+        } else {
+            const cachedList = readCache('convites_ativo_v1', null);
+            if (cachedList) {
+                setOsDisponivel(cachedList);
+                setLoading(false);
+            }
+            fetchOsDisponiveis();
+        }
+        // eslint-disable-next-line
+    }, [id]);
+
+    useEffect(() => {
+        let timer;
+        if (status === 'pending' && timeLeft > 0) {
+            timer = setInterval(() => {
+                setTimeLeft(prev => {
+                    if (prev <= 1) {
+                        setStatus('expired');
+                        clearInterval(timer);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [status, timeLeft]);
+
+    const addFoto = (foto) => setFotos(prev => [...prev, foto]);
+    const removeFoto = (idToRemove) => setFotos(prev => prev.filter(f => f.id !== idToRemove));
+
+    const handleRecusar = async () => {
+        try {
+            await api.post(`/public/convites/${id}/recusar`);
+            setStatus('declined');
+        } catch(err) {
+            console.error(err);
+        }
+    };
+
     const handleCheckIn = async () => {
         if (!navigator.geolocation) {
             return alert('Geolocalização não suportada no seu navegador.');
@@ -153,9 +235,8 @@ const ConviteMontador = () => {
         navigator.geolocation.getCurrentPosition(async (pos) => {
             try {
                 const { latitude, longitude } = pos.coords;
-                // v1: POST /execucao/chegada { osId, lat, lng }
                 await api.post('/execucao/chegada', { 
-                    osId: id, 
+                    osId: osData?.os_id || id, 
                     lat: latitude, 
                     lng: longitude 
                 });
@@ -177,21 +258,31 @@ const ConviteMontador = () => {
     const fetchOS = async () => {
         try {
             setLoading(true);
-            // v1: Buscar convite específico ou execução ativa
-            const resExec = await api.get('/execucao/ativa');
-            if (resExec.data && (resExec.data.ordemId === id || !id)) {
-                setOsData(resExec.data.ordem);
-                setStatus('accepted');
-                setCheckedIn(!!resExec.data.checkInAt);
-                if (resExec.data.status === 'concluida') setFinalizado(true);
-                return;
-            }
+            
+            // 1. Busca API Pública
+            const response = await api.get(`/public/convites/${id}/detalhes`);
+            applyConviteData(response.data);
+            writeCache(`convite_${id}_v1`, response.data);
 
-            const response = await api.get(`/os/${id}`);
-            setOsData(response.data);
-            if (response.data.status === 'aceita') setStatus('accepted');
+            // 3. Verifica se tem execução ativa se já tiver logado e aceito
+            const localUser = localStorage.getItem('accessToken');
+            if (localUser && response.data.status === 'aceito') {
+                try {
+                    const resExec = await api.get('/execucao/ativa');
+                    if (resExec.data && resExec.data.ordemId === response.data.os_id) {
+                        setCheckedIn(!!resExec.data.chegadaAt);
+                        if (resExec.data.status === 'concluida') setFinalizado(true);
+                    }
+                } catch(e) {}
+            }
+            
         } catch (err) {
             console.error('Erro ao buscar OS:', err);
+            if (err.response?.status === 400 && err.response?.data?.error?.includes('expirou')) {
+                 setStatus('expired');
+            } else {
+                 setOsData(null);
+            }
         } finally {
             setLoading(false);
         }
@@ -202,11 +293,14 @@ const ConviteMontador = () => {
             setLoadingDisponivel(true);
             // v1: Busca o convite ativo atual do montador
             const response = await api.get('/convites/ativo');
-            setOsDisponivel(response.data ? [response.data] : []);
+            const list = response.data ? [response.data] : [];
+            setOsDisponivel(list);
+            writeCache('convites_ativo_v1', list);
         } catch (err) {
             console.error('Erro ao buscar convites disponíveis:', err);
         } finally {
             setLoadingDisponivel(false);
+            setLoading(false);
         }
     };
 
@@ -221,10 +315,10 @@ const ConviteMontador = () => {
             fotos.forEach(f => {
                 if (f.file) formData.append('fotos', f.file);
             });
-            await api.post(`/execucao/${id}/fotos`, formData);
+            await api.post(`/execucao/${osData?.os_id || id}/fotos`, formData);
 
             // 2. Finalizar serviço via /execucao/:id/finalizar
-            await api.post(`/execucao/${id}/finalizar`);
+            await api.post(`/execucao/${osData?.os_id || id}/finalizar`);
 
             setFinalizado(true);
         } catch (err) {
@@ -237,13 +331,14 @@ const ConviteMontador = () => {
 
     const handleAceitar = async () => {
         try {
-            // v1: POST /convites/:id/aceitar
-            await api.post(`/convites/${id}/aceitar`);
+            await api.post(`/public/convites/${id}/aceitar`);
             setStatus('accepted');
-            fetchOS(); // Atualizar dados
+            fetchOS(); // Atualizar dados para pegar infos finalizadas
         } catch (err) {
             console.error('Erro ao aceitar OS:', err);
-            alert(err.response?.data?.error || 'Erro ao aceitar serviço.');
+            const msg = err.response?.data?.error || 'Erro ao aceitar serviço.';
+            if (msg.includes('excedido') || msg.includes('processado')) setStatus('expired');
+            alert(msg);
         }
     };
 
@@ -288,12 +383,12 @@ const ConviteMontador = () => {
                     ) : (
                         <div className="space-y-4">
                             {osDisponivel.map((os) => (
-                                <div key={os.id} className="bg-white rounded-[2rem] border border-primary-light/10 shadow-xl shadow-primary/5 overflow-hidden hover:border-accent/20 hover:shadow-accent/10 transition-all group">
+                                <div key={os.os_id || os.id} className="bg-white rounded-[2rem] border border-primary-light/10 shadow-xl shadow-primary/5 overflow-hidden hover:border-accent/20 hover:shadow-accent/10 transition-all group">
                                     <div className="p-6 flex flex-col md:flex-row md:items-center gap-6">
                                         {/* Número OS */}
                                         <div className="shrink-0 w-16 h-16 bg-primary rounded-2xl flex flex-col items-center justify-center border border-accent/20">
                                             <span className="font-mono text-[10px] text-accent/60 uppercase tracking-widest">OS</span>
-                                            <span className="font-drama font-bold text-lg text-accent leading-none">#{os.id.toString().padStart(3, '0')}</span>
+                                            <span className="font-drama font-bold text-lg text-accent leading-none">#{(os.os_id || os.id).toString().padStart(3, '0')}</span>
                                         </div>
 
                                         {/* Info */}
@@ -321,15 +416,12 @@ const ConviteMontador = () => {
 
                                         {/* Botão Aceitar */}
                                         <button
-                                            disabled={aceitando === os.id}
+                                            disabled={aceitando === (os.os_id || os.id)}
                                             onClick={async () => {
-                                                setAceitando(os.id);
+                                                setAceitando(os.os_id || os.id);
                                                 try {
-                                                    await api.patch(`/os/${os.id}/status`, {
-                                                        status: 'ACEITA',
-                                                        montador_id: JSON.parse(localStorage.getItem('montador') || '{}')?.id
-                                                    });
-                                                    navigate(`/convite/${os.id}`);
+                                                    await api.post(`/public/convites/${os.os_id || os.id}/aceitar`);
+                                                    navigate(`/convite/${os.os_id || os.id}`);
                                                 } catch (err) {
                                                     alert('Erro ao aceitar. Tente novamente.');
                                                 } finally {
@@ -337,7 +429,7 @@ const ConviteMontador = () => {
                                                 }
                                             }}
                                             className={`shrink-0 flex items-center gap-2 px-6 py-3.5 rounded-2xl font-mono font-bold text-xs uppercase tracking-widest transition-all ${
-                                                aceitando === os.id
+                                                aceitando === (os.os_id || os.id)
                                                     ? 'bg-primary/20 text-primary/40 cursor-not-allowed'
                                                     : 'bg-accent text-primary shadow-lg shadow-accent/20 hover:shadow-accent/40'
                                             }`}
@@ -380,7 +472,7 @@ const ConviteMontador = () => {
                     <div>
                         <h1 className="font-drama text-3xl font-bold text-primary mb-2">Ordem Concluída!</h1>
                         <p className="font-mono text-sm uppercase tracking-widest text-primary-light/50">
-                            OS #{osData.id.toString().padStart(4, '0')} — {fotos.length} foto{fotos.length > 1 ? 's' : ''} registrada{fotos.length > 1 ? 's' : ''}
+                            OS #{(osData.os_id || osData.id).toString().padStart(4, '0')} — {fotos.length} foto{fotos.length > 1 ? 's' : ''} registrada{fotos.length > 1 ? 's' : ''}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -425,7 +517,7 @@ const ConviteMontador = () => {
 
                         {/* Timer */}
                         <div className="flex flex-col items-center gap-3 shrink-0">
-                            <TimerArc totalSeconds={300} timeLeft={timeLeft} status={status} />
+                            <TimerArc totalSeconds={1200} timeLeft={timeLeft} status={status} />
                             {status === 'pending' && timeLeft < 60 && (
                                 <span className="font-mono text-xs uppercase tracking-widest text-red-400 animate-pulse">
                                     Expirando em breve!
@@ -436,7 +528,7 @@ const ConviteMontador = () => {
                         {/* Info */}
                         <div className="flex-1 space-y-4">
                             <div>
-                                <p className="font-mono text-xs uppercase tracking-widest text-accent mb-1">Convite #OS-{osData.id}</p>
+                                <p className="font-mono text-xs uppercase tracking-widest text-accent mb-1">Convite #OS-{osData.os_id || osData.id}</p>
                                 <h2 className="font-drama text-2xl font-bold text-primary">{osData.cliente_nome}</h2>
                                 <p className="font-mono text-sm text-primary-light/50 uppercase tracking-widest">{osData.descricao || 'Serviço de Montagem'}</p>
                             </div>

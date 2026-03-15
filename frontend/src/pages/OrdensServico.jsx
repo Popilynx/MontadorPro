@@ -4,29 +4,38 @@ import {
     Filter,
     Plus,
     Search,
-    MoreVertical,
     ExternalLink,
     Clock
 } from 'lucide-react';
 import NovaOrdemModal from '../components/NovaOrdemModal';
 import DetalhesOrdemModal from '../components/DetalhesOrdemModal';
 import api from '../api/api';
-import { useNavigate } from 'react-router-dom';
+import { readCache, writeCache } from '../utils/cache';
 
 const OrdensServico = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isNovaOrdemOpen, setIsNovaOrdemOpen] = useState(false);
     const [isDetalhesOpen, setIsDetalhesOpen] = useState(false);
     const [selectedOrdem, setSelectedOrdem] = useState(null);
-    const [ordens, setOrdens] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+    const initialCache = readCache('ordens_list_v1', null);
+    const [ordens, setOrdens] = useState(() => initialCache || []);
+    const [loading, setLoading] = useState(() => !initialCache);
+    const user = JSON.parse(localStorage.getItem('montador') || '{}');
+    const isAdmin = user?.role?.toLowerCase() === 'admin';
 
     const fetchOrdens = async () => {
         try {
-            setLoading(true);
+            const cached = readCache('ordens_list_v1', null);
+            if (cached) {
+                setOrdens(cached);
+                setLoading(false);
+            } else {
+                setLoading(true);
+            }
             const response = await api.get('/os');
-            setOrdens(response.data.ordens || []);
+            const nextOrdens = response.data.ordens || [];
+            setOrdens(nextOrdens);
+            writeCache('ordens_list_v1', nextOrdens);
         } catch (err) {
             console.error('Erro ao buscar ordens:', err);
         } finally {
@@ -45,7 +54,7 @@ const OrdensServico = () => {
             CONVITE_ENVIADO: 'bg-accent/10 text-accent border border-accent/20',
             DISPONIVEL: 'bg-primary-light/10 text-primary border border-primary-light/20',
         };
-        const currentStyle = styles[status] || 'bg-slate-500/10 text-slate-600 border border-slate-500/20';
+        const currentStyle = styles[status?.toUpperCase()] || 'bg-slate-500/10 text-slate-600 border border-slate-500/20';
         return (
             <span className={`px-2 md:px-3 py-1 md:py-1.5 rounded-full text-[9px] md:text-xs font-mono font-bold uppercase tracking-widest shadow-inner ${currentStyle}`}>
                 {(status || 'DESCONHECIDO').replace('_', ' ')}
@@ -58,13 +67,14 @@ const OrdensServico = () => {
         setIsDetalhesOpen(true);
     };
 
-    const filteredOrdens = ordens.filter(os => 
-        os.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        os.id.toString().includes(searchTerm)
-    );
+    const filteredOrdens = ordens.filter(os => {
+        const clienteNome = os.cliente_nome || os.clienteNome || os.cliente?.nome || '';
+        return clienteNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            os.id.toString().includes(searchTerm);
+    });
 
     return (
-        <Layout title="Ordens de Serviço">
+        <Layout title="Ordens de Servico">
             <div className="bg-white rounded-[1.5rem] md:rounded-[2rem] shadow-xl shadow-primary/5 border border-primary-light/5 overflow-hidden">
                 {/* Toolbar */}
                 <div className="p-4 md:p-8 border-b border-primary-light/10 flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6">
@@ -84,17 +94,18 @@ const OrdensServico = () => {
                             <Filter size={16} />
                             Filtros
                         </button>
-                        <button 
-                            onClick={() => setIsNovaOrdemOpen(true)}
-                            className="flex-1 lg:flex-none btn-primary flex items-center justify-center gap-2 py-3.5"
-                        >
-                            <Plus size={18} />
-                            Nova Ordem
-                        </button>
+                        {isAdmin && (
+                            <button 
+                                onClick={() => setIsNovaOrdemOpen(true)}
+                                className="flex-1 lg:flex-none btn-primary flex items-center justify-center gap-2 py-3.5"
+                            >
+                                <Plus size={18} />
+                                Nova Ordem
+                            </button>
+                        )}
                     </div>
                 </div>
 
-                {/* Table container with horizontal scroll for mobile */}
                 <div className="overflow-x-auto -mx-0">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -103,15 +114,16 @@ const OrdensServico = () => {
                                 <th className="px-4 md:px-8 py-4 md:py-5 hidden sm:table-cell">OS</th>
                                 <th className="px-4 md:px-8 py-4 md:py-5">Cliente</th>
                                 <th className="px-4 md:px-8 py-4 md:py-5 hidden md:table-cell">Agendamento</th>
-                                <th className="px-4 md:px-8 py-4 md:py-5 text-right">Valor</th>
-                                <th className="px-4 md:px-8 py-4 md:py-5 text-center">Ações</th>
+                                <th className="px-4 md:px-8 py-4 md:py-5 text-right">Bruto</th>
+                                <th className="px-4 md:px-8 py-4 md:py-5 text-right">Liquido</th>
+                                <th className="px-4 md:px-8 py-4 md:py-5 text-center">Acoes</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-primary-light/5">
                             {loading ? (
                                 <tr>
                                     <td colSpan="6" className="px-8 py-20 text-center opacity-50 font-mono text-sm tracking-widest animate-pulse">
-                                        Carregando ordens de serviço...
+                                        Carregando ordens de servico...
                                     </td>
                                 </tr>
                             ) : filteredOrdens.length > 0 ? (
@@ -121,38 +133,63 @@ const OrdensServico = () => {
                                             {getStatusBadge(os.status)}
                                         </td>
                                         <td className="px-4 md:px-8 py-4 md:py-6 hidden sm:table-cell">
-                                            <span className="font-mono font-bold text-primary text-sm">#{os.id.toString().padStart(4, '0')}</span>
+                                            <span className="font-mono font-bold text-primary text-sm">
+                                                {os.numero_os || os.numero || `#${os.id.toString().padStart(4, '0')}`}
+                                            </span>
                                         </td>
-                                        <td className="px-4 md:px-8 py-4 md:py-6">
+                                        <td 
+                                            className="px-4 md:px-8 py-4 md:py-6 cursor-pointer"
+                                            onClick={() => handleVerDetalhes(os)}
+                                        >
                                             <div className="flex flex-col gap-0.5 min-w-[120px]">
-                                                <span className="font-sans font-bold text-primary tracking-tight text-sm md:text-base leading-tight">{os.cliente_nome}</span>
-                                                <span className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-primary-light/50 truncate max-w-[150px] md:max-w-[250px]">{os.endereco}</span>
+                                                <span className="font-sans font-bold text-primary tracking-tight text-sm md:text-base leading-tight">
+                                                    {os.cliente_nome || os.clienteNome || os.cliente?.nome}
+                                                </span>
+                                                <span className="font-mono text-[9px] md:text-[10px] tracking-widest uppercase text-primary-light/50 truncate max-w-[150px] md:max-w-[250px]">
+                                                    {os.endereco_instalacao || os.endereco}
+                                                </span>
                                             </div>
                                         </td>
-                                        <td className="px-4 md:px-8 py-4 md:py-6 text-xs md:text-sm text-primary-light/70 font-mono hidden md:table-cell">
+                                        <td 
+                                            className="px-4 md:px-8 py-4 md:py-6 text-xs md:text-sm text-primary-light/70 font-mono hidden md:table-cell cursor-pointer"
+                                            onClick={() => handleVerDetalhes(os)}
+                                        >
                                             <div className="flex items-center gap-2">
                                                 <Clock size={14} className="text-primary-light/40" />
-                                                {os.data_agendamento ? new Date(os.data_agendamento).toLocaleDateString() : '—'}
+                                                {(os.data_agendamento || os.dataInstalacao) ? new Date(os.data_agendamento || os.dataInstalacao).toLocaleDateString() : '—'}
                                             </div>
                                         </td>
-                                        <td className="px-4 md:px-8 py-4 md:py-6 text-right whitespace-nowrap">
-                                            <span className="font-sans font-bold text-primary text-sm md:text-base italic">R$ {os.valor}</span>
+                                        <td 
+                                            className="px-4 md:px-8 py-4 md:py-6 text-right whitespace-nowrap cursor-pointer"
+                                            onClick={() => handleVerDetalhes(os)}
+                                        >
+                                            <span className="font-sans font-bold text-primary-light/50 text-xs md:text-sm">
+                                                R$ {parseFloat(os.valorBruto || os.valor || 0).toFixed(2).replace('.', ',')}
+                                            </span>
+                                        </td>
+                                        <td 
+                                            className="px-4 md:px-8 py-4 md:py-6 text-right whitespace-nowrap cursor-pointer"
+                                            onClick={() => handleVerDetalhes(os)}
+                                        >
+                                            <span className="font-sans font-bold text-emerald-600 text-sm md:text-base italic">
+                                                R$ {(Number(os.valorBruto || os.valor || 0) - (os.comissao || 80)).toFixed(2).replace('.', ',')}
+                                            </span>
                                         </td>
                                         <td className="px-4 md:px-8 py-4 md:py-6 text-center">
                                             <div className="flex items-center justify-center gap-1 md:gap-3">
                                                 <button 
-                                                    onClick={() => navigate(`/convite/${os.id}`)}
-                                                    className="p-2 text-primary-light/40 hover:text-accent hover:bg-accent/10 rounded-xl transition-all" 
-                                                    title="Ver Relatório"
+                                                    onClick={() => handleVerDetalhes(os)}
+                                                    className="px-3 py-1.5 bg-accent/10 hover:bg-accent text-accent hover:text-primary font-mono font-bold text-[9px] uppercase tracking-widest rounded-lg transition-all border border-accent/20" 
+                                                    title="Tratamento de OS"
                                                 >
-                                                    <ExternalLink size={16} />
+                                                    Tratamento
                                                 </button>
                                                 <button 
                                                     onClick={() => handleVerDetalhes(os)}
                                                     className="p-2 text-primary-light/40 hover:text-primary hover:bg-background rounded-xl transition-all"
-                                                    title="Mais Opções"
+                                                    title="Ver Tudo"
                                                 >
-                                                    <MoreVertical size={16} />
+                                                    <ExternalLink size={16} />
                                                 </button>
                                             </div>
                                         </td>
@@ -169,13 +206,11 @@ const OrdensServico = () => {
                     </table>
                 </div>
 
-                {/* Footer summary */}
                 <div className="p-4 md:p-8 border-t border-primary-light/10 text-center bg-white">
                     <p className="text-[10px] font-mono uppercase tracking-widest text-primary-light/40">Total de {filteredOrdens.length} registros</p>
                 </div>
             </div>
 
-            {/* Modals */}
             <NovaOrdemModal 
                 isOpen={isNovaOrdemOpen} 
                 onClose={() => {

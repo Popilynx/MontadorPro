@@ -21,9 +21,9 @@ const Layout = ({ children, title }) => {
 
             <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
             
-            <div className="flex-1 flex flex-col w-full min-w-0">
+            <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
                 <Header title={title} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-                <main className="p-4 sm:p-6 md:p-12 xl:p-16 animate-[fade-in_0.8s_ease-out] lg:ml-64">
+                <main className="p-4 sm:p-6 md:p-12 xl:p-16 animate-[fade-in_0.8s_ease-out]">
                     {children}
                 </main>
             </div>

@@ -336,6 +336,32 @@ const Landing = () => {
                 </div>
             </section>
 
+            {/* Pricing Table */}
+            <section className="py-28 px-8 md:px-24 bg-primary-dark border-t border-white/5">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-12">
+                        <p className="text-xs font-mono text-accent uppercase tracking-widest mb-3">Ganhe por Projeto</p>
+                        <h2 className="text-4xl md:text-6xl font-sans font-bold text-white tracking-tight">Tabela de Valores</h2>
+                        <p className="text-white/60 text-sm md:text-base mt-4">Quanto mais complexo o trabalho, maior o seu ganho.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {[
+                            { label: 'Simples', valor: 'R$300', desc: 'Quarto ou cozinha basica' },
+                            { label: 'Medio', valor: 'R$600', desc: 'Cozinha completa ou closet' },
+                            { label: 'Complexo', valor: 'R$900', desc: 'Ambientes integrados' },
+                            { label: 'Super Luxo', valor: 'R$1200', desc: 'Projetos premium completos' }
+                        ].map((plan) => (
+                            <div key={plan.label} className="bg-primary/70 border border-white/10 rounded-3xl p-7 text-center shadow-2xl hover:shadow-accent/20 hover:-translate-y-1 transition-all">
+                                <div className="text-[10px] font-mono uppercase tracking-widest text-white/50 mb-3">{plan.label}</div>
+                                <div className="font-drama text-5xl text-accent mb-2">{plan.valor}</div>
+                                <p className="text-xs text-white/50">{plan.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Pricing / Call to Action */}
             <section className="py-40 px-8 bg-primary-dark border-t border-white/5">
                 <div className="max-w-3xl mx-auto text-center">
