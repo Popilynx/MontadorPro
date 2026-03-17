@@ -3,6 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
+const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const validator = require('validator');
@@ -59,13 +60,13 @@ app.use(cookieParser());
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: parseInt(process.env.RATE_LIMIT_MAX || '300', 10),
-    message: { error: 'Muitas requisiÃ§Ãµes. Tente novamente em alguns minutos.' },
+    message: { error: 'Muitas requisições. Tente novamente em alguns minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 app.use('/api', apiLimiter);
 
-// SanitizaÃ§Ã£o simples de strings (body e query)
+// Sanitização simples de strings (body e query)
 const shouldSkipSanitize = (key, value) => {
     if (typeof value !== 'string') return false;
     const lowerKey = (key || '').toLowerCase();
@@ -120,19 +121,33 @@ app.use('/api/v1/public', publicRoutes);
 // Servir fotos enviadas (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-
 // Servir arquivos estáticos do Frontend
 const frontendPath = path.join(__dirname, '../../frontend/dist');
-app.use(express.static(frontendPath));
+
+if (fs.existsSync(frontendPath)) {
+    console.log(`✅ Frontend dist encontrado em: ${frontendPath}`);
+    app.use(express.static(frontendPath));
+} else {
+    console.warn(`⚠️ Frontend dist NÃO ENCONTRADO em: ${frontendPath}`);
+}
 
 // Rota catch-all para SPA (React Router)
 // Importante: deve vir DEPOIS das rotas de API
 app.use((req, res, next) => {
-    // Se a requisição começar com /api, não serve o index.html (já deveria ter sido tratada e retornado 404)
+    // Se a requisição começar com /api, não serve o index.html
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ error: 'API route not found' });
     }
-    res.sendFile(path.join(frontendPath, 'index.html'));
+
+    const indexPath = path.join(frontendPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(503).json({
+            error: 'Frontend não disponível',
+            message: 'O frontend ainda não foi buildado ou o diretório dist está ausente.'
+        });
+    }
 });
 
 // Tratamento de erros global
