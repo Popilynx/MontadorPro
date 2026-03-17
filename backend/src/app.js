@@ -16,6 +16,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const { startCronJobs } = require('./jobs/cronManager');
 
 const app = express();
+app.set('trust proxy', 1);
 startCronJobs();
 
 // Middlewares de segurança

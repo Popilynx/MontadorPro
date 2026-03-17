@@ -6,13 +6,22 @@ let isPushEnabled = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE
 
 if (isPushEnabled) {
   try {
+    const publicKey = process.env.VAPID_PUBLIC_KEY.trim();
+    const privateKey = process.env.VAPID_PRIVATE_KEY.trim();
+    
+    // Validação básica de tamanho para evitar erro críptico do web-push
+    if (publicKey.length < 30) {
+        throw new Error('VAPID_PUBLIC_KEY parece curta demais ou inválida.');
+    }
+
     webpush.setVapidDetails(
       process.env.VAPID_SUBJECT || 'mailto:admin@montadorpro.com',
-      process.env.VAPID_PUBLIC_KEY.trim(),
-      process.env.VAPID_PRIVATE_KEY.trim()
+      publicKey,
+      privateKey
     );
   } catch (err) {
     console.error('❌ Erro ao configurar Web Push (VAPID):', err.message);
+    console.error('💡 Dica: Verifique se as chaves no seu .env de produção estão no formato correto de 65 bytes (base64 URL-safe).');
     isPushEnabled = false;
   }
 }

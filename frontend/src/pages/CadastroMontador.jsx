@@ -154,6 +154,9 @@ const CadastroMontador = () => {
         try {
             await api.post('/auth/register', formData);
             setSucesso(true);
+            setTimeout(() => {
+                navigate('/login');
+            }, 5000);
         } catch (err) {
             console.error(err);
             setErro(err.response?.data?.error || 'Ocorreu um erro ao enviar seu cadastro. Tente novamente.');

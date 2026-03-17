@@ -10,32 +10,23 @@ import {
 import NovaOrdemModal from '../components/NovaOrdemModal';
 import DetalhesOrdemModal from '../components/DetalhesOrdemModal';
 import api from '../api/api';
-import { readCache, writeCache } from '../utils/cache';
 
 const OrdensServico = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isNovaOrdemOpen, setIsNovaOrdemOpen] = useState(false);
     const [isDetalhesOpen, setIsDetalhesOpen] = useState(false);
     const [selectedOrdem, setSelectedOrdem] = useState(null);
-    const initialCache = readCache('ordens_list_v1', null);
-    const [ordens, setOrdens] = useState(() => initialCache || []);
-    const [loading, setLoading] = useState(() => !initialCache);
+    const [ordens, setOrdens] = useState([]);
+    const [loading, setLoading] = useState(true);
     const user = JSON.parse(localStorage.getItem('montador') || '{}');
     const isAdmin = user?.role?.toLowerCase() === 'admin';
 
     const fetchOrdens = async () => {
         try {
-            const cached = readCache('ordens_list_v1', null);
-            if (cached) {
-                setOrdens(cached);
-                setLoading(false);
-            } else {
-                setLoading(true);
-            }
+            setLoading(true);
             const response = await api.get('/os');
             const nextOrdens = response.data.ordens || [];
             setOrdens(nextOrdens);
-            writeCache('ordens_list_v1', nextOrdens);
         } catch (err) {
             console.error('Erro ao buscar ordens:', err);
         } finally {

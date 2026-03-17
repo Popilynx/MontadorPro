@@ -3,7 +3,6 @@ import Layout from '../components/Layout';
 import StatsCard from '../components/StatsCard';
 import RealTimeMap from '../components/RealTimeMap';
 import api from '../api/api';
-import { readCache, writeCache } from '../utils/cache';
 import {
     ClipboardCheck,
     Users,
@@ -15,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import DetalhesOrdemModal from '../components/DetalhesOrdemModal';
 
 const Dashboard = () => {
-    const statsCacheKey = 'dashboard_stats_v2';
     const defaultStats = [
         { title: 'Ordens Concluídas', value: '0', icon: <ClipboardCheck />, color: 'bg-primary', trend: 0 },
         { title: 'Montadores Ativos', value: '0', icon: <Users />, color: 'bg-emerald-500', trend: 0 },
@@ -30,32 +28,26 @@ const Dashboard = () => {
         { title: 'Faturamento Total', value: `R$ ${((data?.faturamento ?? 0)).toLocaleString('pt-BR')}`, icon: <TrendingUp />, color: 'bg-accent', trend: 0 },
     ]);
 
-    const statsCache = readCache(statsCacheKey, null);
-    const ordersCache = readCache('dashboard_orders_v1', null);
-    const mapCache = readCache('dashboard_montadores_v1', null);
+    const [stats, setStats] = useState(defaultStats);
+    const [montadores, setMontadores] = useState([]);
+    const [recentOrders, setRecentOrders] = useState([]);
 
-    const [stats, setStats] = useState(() => statsCache ? buildStats(statsCache) : defaultStats);
-    const [montadores, setMontadores] = useState(() => mapCache || []);
-    const [recentOrders, setRecentOrders] = useState(() => ordersCache || []);
+    const [statsReady, setStatsReady] = useState(false);
+    const [ordersReady, setOrdersReady] = useState(false);
+    const [mapReady, setMapReady] = useState(false);
 
-    const [statsReady, setStatsReady] = useState(() => !!statsCache);
-    const [ordersReady, setOrdersReady] = useState(() => ordersCache !== null);
-    const [mapReady, setMapReady] = useState(() => mapCache !== null);
-
-    const [statsLoading, setStatsLoading] = useState(() => !statsCache);
-    const [ordersLoading, setOrdersLoading] = useState(() => !ordersCache);
-    const [mapLoading, setMapLoading] = useState(() => !mapCache);
+    const [statsLoading, setStatsLoading] = useState(true);
+    const [ordersLoading, setOrdersLoading] = useState(true);
+    const [mapLoading, setMapLoading] = useState(true);
     const [isDetalhesOpen, setIsDetalhesOpen] = useState(false);
     const [selectedOrdem, setSelectedOrdem] = useState(null);
     const navigate = useNavigate();
 
     const fetchStats = async () => {
-        if (!statsReady) setStatsLoading(true);
         try {
             const { data } = await api.get('/os/stats/dashboard');
             const nextStats = buildStats(data);
             setStats(nextStats);
-            writeCache(statsCacheKey, data);
             setStatsReady(true);
         } catch (err) {
             console.error('Erro ao buscar stats:', err);
@@ -65,13 +57,11 @@ const Dashboard = () => {
     };
 
     const fetchOrders = async () => {
-        if (!ordersReady) setOrdersLoading(true);
         try {
             const { data } = await api.get('/os?limit=3');
             const ordersArray = Array.isArray(data) ? data : (data.ordens || []);
             const nextOrders = ordersArray.slice(0, 3);
             setRecentOrders(nextOrders);
-            localStorage.setItem('dashboard_orders_v1', JSON.stringify(nextOrders));
             setOrdersReady(true);
         } catch (err) {
             console.error('Erro ao buscar ordens:', err);
@@ -81,11 +71,9 @@ const Dashboard = () => {
     };
 
     const fetchMap = async () => {
-        if (!mapReady) setMapLoading(true);
         try {
             const { data } = await api.get('/admin/montadores?view=map');
             setMontadores(data || []);
-            localStorage.setItem('dashboard_montadores_v1', JSON.stringify(data || []));
             setMapReady(true);
         } catch (err) {
             console.error('Erro ao buscar montadores do mapa:', err);
