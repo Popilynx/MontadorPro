@@ -6,6 +6,8 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  // connection_limit é controlado via query param na DATABASE_URL:
+  // ex: ?connection_limit=5&pool_timeout=10
 }
 
 model Montador {
