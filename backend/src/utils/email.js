@@ -1,8 +1,11 @@
 const { Resend } = require('resend');
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
 const hasSmtp = Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+const hasBrevoApi = Boolean(process.env.BREVO_API_KEY);
 const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+
 const smtpTransport = hasSmtp ? nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number.isFinite(smtpPort) ? smtpPort : 587,
@@ -11,39 +14,65 @@ const smtpTransport = hasSmtp ? nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   },
-  connectionTimeout: 15000, 
-  greetingTimeout: 15000,
-  socketTimeout: 30000,
+  connectionTimeout: 10000, 
+  greetingTimeout: 10000,
+  socketTimeout: 15000,
   tls: {
     rejectUnauthorized: false
   }
 }) : null;
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const FROM = process.env.SMTP_FROM || process.env.RESEND_FROM || 'Montador PRO <onboarding@resend.dev>';
+const FROM_NAME = "Montador PRO";
+const FROM_EMAIL = process.env.SMTP_FROM_EMAIL || "onboarding@nfmoveisplanejados.com.br";
+const FROM_FULL = `${FROM_NAME} <${FROM_EMAIL}>`;
 
 async function sendEmail({ to, subject, html }) {
   let lastError = null;
+  const recipients = Array.isArray(to) ? to : [to];
 
-  // 1. Tentar via SMTP (Brevo) se configurado
+  // 1. Tentar via Brevo API (A solução mais estável e recomendada)
+  if (hasBrevoApi) {
+    try {
+      const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+        sender: { name: FROM_NAME, email: FROM_EMAIL },
+        to: recipients.map(email => ({ email })),
+        subject: subject,
+        htmlContent: html
+      }, {
+        headers: {
+          'api-key': process.env.BREVO_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      });
+      console.log('[email] Brevo API sent successfully');
+      return response.data;
+    } catch (err) {
+      lastError = err;
+      const errMsg = err.response?.data?.message || err.message;
+      console.error('[email] Brevo API failed:', errMsg);
+      // Continua para o próximo se falhar
+    }
+  }
+
+  // 2. Tentar via SMTP (Brevo Legacy) se configurado
   if (hasSmtp && smtpTransport) {
     try {
-      const info = await smtpTransport.sendMail({ from: FROM, to, subject, html });
+      const info = await smtpTransport.sendMail({ from: FROM_FULL, to, subject, html });
       console.log('[email] SMTP sent successfully');
       return info;
     } catch (err) {
       lastError = err;
-      console.error('[email] SMTP failed, trying fallback if available:', err?.message || err);
-      // Não joga erro aqui, tenta o próximo
+      console.error('[email] SMTP failed:', err?.message || err);
     }
   }
 
-  // 2. Tentar via Resend se configurado (Fallback)
+  // 3. Tentar via Resend se configurado (Fallback Final)
   if (process.env.RESEND_API_KEY && resend) {
     try {
-      const recipients = Array.isArray(to) ? to : [to];
-      const result = await resend.emails.send({ from: FROM, to: recipients, subject, html });
-      console.log('[email] Resend (fallback) sent successfully');
+      const result = await resend.emails.send({ from: FROM_FULL, to: recipients, subject, html });
+      console.log('[email] Resend fallback sent successfully');
       return result;
     } catch (err) {
       console.error('[email] Resend fallback failed:', err?.message || err);
@@ -51,10 +80,8 @@ async function sendEmail({ to, subject, html }) {
     }
   }
 
-  // Se chegou aqui e tem erro, joga o último erro
   if (lastError) throw lastError;
-
-  console.warn('[email] No provider configured or all failed.');
+  console.warn('[email] Nenhum provedor configurado ou todos falharam.');
   return null;
 }
 
