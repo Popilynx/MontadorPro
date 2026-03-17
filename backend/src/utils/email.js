@@ -10,7 +10,10 @@ const smtpTransport = hasSmtp ? nodemailer.createTransport({
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
-  }
+  },
+  connectionTimeout: 20000, // 20 segundos
+  greetingTimeout: 20000,
+  socketTimeout: 30000
 }) : null;
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : { emails: { send: () => Promise.resolve() } };
