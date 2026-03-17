@@ -35,7 +35,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('/api/') || event.request.url.includes('basemaps.cartocdn.com') || event.request.url.includes('openstreetmap.org')) {
     // Para API e Mapas: tenta ir na rede primeiro e não faz cache agressivo de milhares de tiles
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request).catch(() => caches.match(event.request).then(res => res || new Response('', { status: 503 })))
     );
   } else {
     // Para Assets: Stale-While-Revalidate
@@ -47,9 +47,11 @@ self.addEventListener('fetch', (event) => {
             cache.put(event.request, responseClone);
           });
           return response;
+        }).catch(() => {
+          return new Response('', { status: 408 });
         });
         return cachedResponse || networkFetch;
-      })
+      }).catch(() => new Response('', { status: 503 }))
     );
   }
 });

@@ -334,3 +334,70 @@ exports.broadcast = async (req, res) => {
   await broadcast({ title, body });
   res.json({ message: 'Broadcast enviado com sucesso.' });
 };
+
+exports.getHistorico = async (req, res) => {
+  try {
+    const anoStr = req.query.ano || new Date().getFullYear().toString();
+    const ano = parseInt(anoStr);
+    
+    const minDate = new Date(ano, 0, 1);
+    const maxDate = new Date(ano, 11, 31, 23, 59, 59, 999);
+
+    const ordensConcluidas = await prisma.ordemServico.findMany({
+      where: {
+        status: 'concluida',
+        dataInstalacao: {
+          gte: minDate,
+          lte: maxDate
+        }
+      },
+      select: {
+        dataInstalacao: true,
+        valorBruto: true,
+        avaliacoes: { select: { notaBase: true } }
+      }
+    });
+
+    const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const mesesObj = Array.from({ length: 12 }, (_, i) => ({
+      label: MESES[i],
+      mes: i + 1,
+      valor: 0,
+      ordens: 0
+    }));
+
+    let totalAnual = 0;
+    let ordensTotal = 0;
+    let somaAvaliacao = 0;
+    let avaliacoesCount = 0;
+
+    for (const os of ordensConcluidas) {
+      if (!os.dataInstalacao) continue;
+      
+      const m = os.dataInstalacao.getMonth();
+      const v = os.valorBruto || 0;
+      
+      mesesObj[m].valor += v;
+      mesesObj[m].ordens += 1;
+      totalAnual += v;
+      ordensTotal += 1;
+
+      if (os.avaliacoes && os.avaliacoes.length > 0) {
+        somaAvaliacao += os.avaliacoes[0].notaBase || 5.0;
+        avaliacoesCount += 1;
+      }
+    }
+
+    const rating = avaliacoesCount > 0 ? (somaAvaliacao / avaliacoesCount).toFixed(1) : '5.0';
+
+    res.json({
+      meses: mesesObj,
+      totalAnual,
+      ordensTotal,
+      rating
+    });
+  } catch (err) {
+    console.error('Erro ao buscar historico geral:', err);
+    res.status(500).json({ error: 'Erro ao buscar historico' });
+  }
+};

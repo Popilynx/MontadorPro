@@ -61,7 +61,7 @@ const OrdensServico = () => {
     const filteredOrdens = ordens.filter(os => {
         const clienteNome = os.cliente_nome || os.clienteNome || os.cliente?.nome || '';
         return clienteNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            os.id.toString().includes(searchTerm);
+            String(os.id ?? '').includes(searchTerm);
     });
 
     return (
@@ -125,7 +125,7 @@ const OrdensServico = () => {
                                         </td>
                                         <td className="px-4 md:px-8 py-4 md:py-6 hidden sm:table-cell">
                                             <span className="font-mono font-bold text-primary text-sm">
-                                                {os.numero_os || os.numero || `#${os.id.toString().padStart(4, '0')}`}
+                                                {os.numero_os || os.numero || `#${String(os.id ?? 0).padStart(4, '0')}`}
                                             </span>
                                         </td>
                                         <td 

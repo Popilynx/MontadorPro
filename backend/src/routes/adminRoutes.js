@@ -39,6 +39,7 @@ router.post('/criar-os', adminAuth, adminController.criarOrdemServico);
 router.post('/concluir-os', adminAuth, adminController.concluirOS);
 
 router.post('/push/broadcast', adminAuth, adminController.broadcast);
-router.post('/convites', adminAuth, conviteController.criarConviteAdmin); // Adicionado para consistência
+router.post('/convites', adminAuth, conviteController.criarConviteAdmin); 
+router.get('/historico', adminAuth, adminController.getHistorico);
 
 module.exports = router;
