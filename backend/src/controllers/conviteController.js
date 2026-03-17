@@ -16,7 +16,21 @@ exports.getMeusConvites = async (req, res) => {
             },
             orderBy: { createdAt: 'desc' }
         });
-        res.json(convites);
+
+        // Achatando o resultado para o frontend
+        const result = convites.map(c => ({
+            id: c.id,
+            os_id: c.ordemId,
+            cliente_nome: c.ordem.cliente?.nome || c.ordem.clienteNome || 'Cliente',
+            endereco: c.ordem.endereco,
+            valor: c.ordem.valorBruto || c.ordem.valor,
+            descricao: c.ordem.descricao,
+            status: c.status,
+            expira_em: c.expiresAt,
+            data_agendamento: c.ordem.dataAgendamento
+        }));
+
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: 'Erro ao buscar convites' });
     }

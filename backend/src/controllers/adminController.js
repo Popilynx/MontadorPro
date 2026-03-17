@@ -354,7 +354,7 @@ exports.getHistorico = async (req, res) => {
       select: {
         dataInstalacao: true,
         valorBruto: true,
-        avaliacoes: { select: { notaBase: true } }
+        avaliacoes: { select: { nota: true } }
       }
     });
 
@@ -383,7 +383,7 @@ exports.getHistorico = async (req, res) => {
       ordensTotal += 1;
 
       if (os.avaliacoes && os.avaliacoes.length > 0) {
-        somaAvaliacao += os.avaliacoes[0].notaBase || 5.0;
+        somaAvaliacao += os.avaliacoes[0].nota || 5.0;
         avaliacoesCount += 1;
       }
     }

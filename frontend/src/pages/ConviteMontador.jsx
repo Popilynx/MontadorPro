@@ -293,7 +293,7 @@ const ConviteMontador = () => {
             setLoadingDisponivel(true);
             // v1: Busca o convite ativo atual do montador
             const response = await api.get('/convites/ativo');
-            const list = response.data ? [response.data] : [];
+            const list = response.data || [];
             setOsDisponivel(list);
             writeCache('convites_ativo_v1', list);
         } catch (err) {
@@ -304,7 +304,6 @@ const ConviteMontador = () => {
         }
     };
 
-// ...
     const handleFinalizar = async () => {
         if (fotos.length < 4) return alert('O sistema exige no mínimo 4 fotos para finalizar o serviço.');
         try {
@@ -388,7 +387,7 @@ const ConviteMontador = () => {
                                         {/* Número OS */}
                                         <div className="shrink-0 w-16 h-16 bg-primary rounded-2xl flex flex-col items-center justify-center border border-accent/20">
                                             <span className="font-mono text-[10px] text-accent/60 uppercase tracking-widest">OS</span>
-                                            <span className="font-drama font-bold text-lg text-accent leading-none">#{(os.os_id || os.id).toString().padStart(3, '0')}</span>
+                                            <span className="font-drama font-bold text-lg text-accent leading-none">#{(os.os_id || os.id || '').toString().padStart(3, '0')}</span>
                                         </div>
 
                                         {/* Info */}
@@ -435,7 +434,7 @@ const ConviteMontador = () => {
                                             }`}
                                         >
                                             <CheckCircle2 size={16} />
-                                            {aceitando === os.id ? 'Aceitando...' : 'Aceitar'}
+                                            {aceitando === (os.os_id || os.id) ? 'Aceitando...' : 'Aceitar'}
                                         </button>
                                     </div>
                                 </div>
@@ -472,7 +471,7 @@ const ConviteMontador = () => {
                     <div>
                         <h1 className="font-drama text-3xl font-bold text-primary mb-2">Ordem Concluída!</h1>
                         <p className="font-mono text-sm uppercase tracking-widest text-primary-light/50">
-                            OS #{(osData.os_id || osData.id).toString().padStart(4, '0')} — {fotos.length} foto{fotos.length > 1 ? 's' : ''} registrada{fotos.length > 1 ? 's' : ''}
+                            OS #{(osData.os_id || osData.id || '').toString().padStart(4, '0')} — {fotos.length} foto{fotos.length > 1 ? 's' : ''} registrada{fotos.length > 1 ? 's' : ''}
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
