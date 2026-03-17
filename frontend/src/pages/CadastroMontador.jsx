@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, MapPin, User, Briefcase, FileText, ArrowRight, ArrowLeft, Loader2, Phone, Mail, CreditCard, Lock } from 'lucide-react';
 import api from '../api/api';
 
+const MAX_DOC_MB = 3;
+const MAX_IMG_DIM = 1280;
+
 const toBase64 = file => new Promise((resolve, reject) => {
     if (!file) return resolve(null);
     const reader = new FileReader();
@@ -10,6 +13,48 @@ const toBase64 = file => new Promise((resolve, reject) => {
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
 });
+
+const compressImageToBase64 = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+            const scale = Math.min(MAX_IMG_DIM / img.width, MAX_IMG_DIM / img.height, 1);
+            const w = Math.round(img.width * scale);
+            const h = Math.round(img.height * scale);
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                return reject(new Error('Falha ao processar a imagem. Tente novamente.'));
+            }
+            ctx.drawImage(img, 0, 0, w, h);
+            try {
+                const compressed = canvas.toDataURL('image/jpeg', 0.8);
+                resolve(compressed);
+            } catch (err) {
+                reject(new Error('Falha ao comprimir a imagem. Use uma foto menor.'));
+            }
+        };
+        img.onerror = () => reject(new Error('Falha ao processar a imagem.'));
+        img.src = reader.result;
+    };
+    reader.onerror = () => reject(new Error('Falha ao ler o arquivo.'));
+    reader.readAsDataURL(file);
+});
+
+const fileToBase64 = async (file) => {
+    if (!file) return null;
+    const maxBytes = MAX_DOC_MB * 1024 * 1024;
+    if (file.size > maxBytes) {
+        throw new Error(`Arquivo acima de ${MAX_DOC_MB}MB. Compacte e tente novamente.`);
+    }
+    if (file.type && file.type.startsWith('image/')) {
+        return await compressImageToBase64(file);
+    }
+    return await toBase64(file);
+};
 
 const CadastroMontador = () => {
     const navigate = useNavigate();
@@ -125,6 +170,17 @@ const CadastroMontador = () => {
         });
     };
 
+    const handleDocUpload = async (field, file) => {
+        if (!file) return;
+        setErro(null);
+        try {
+            const base64 = await fileToBase64(file);
+            setFormData(prev => ({ ...prev, [field]: base64 }));
+        } catch (err) {
+            setErro(err.message || 'Erro ao processar arquivo.');
+        }
+    };
+
     const isStep1Valid = () => formData.nome && formData.cpf && formData.telefone && formData.senha && formData.cidade;
     const isStep2Valid = () => formData.nivelExperiencia && formData.anosExperiencia;
     const isStep4Valid = () => formData.aceitoLGPD && formData.aceitoConduta;
@@ -159,7 +215,11 @@ const CadastroMontador = () => {
             }, 5000);
         } catch (err) {
             console.error(err);
-            setErro(err.response?.data?.error || 'Ocorreu um erro ao enviar seu cadastro. Tente novamente.');
+            if (err.response?.status === 413) {
+                setErro('Arquivos muito grandes. Envie fotos menores e tente novamente.');
+            } else {
+                setErro(err.response?.data?.error || 'Ocorreu um erro ao enviar seu cadastro. Tente novamente.');
+            }
         } finally {
             setLoading(false);
             window.scrollTo(0, 0);
@@ -401,12 +461,8 @@ const CadastroMontador = () => {
                                 <input 
                                     type="file" 
                                     accept="image/*"
-                                    onChange={async (e) => {
-                                        if (e.target.files[0]) {
-                                            const base64 = await toBase64(e.target.files[0]);
-                                            setFormData(prev => ({...prev, docFoto: base64}));
-                                        }
-                                    }}
+                                    capture="environment"
+                                    onChange={(e) => handleDocUpload('docFoto', e.target.files[0])}
                                     className="block w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer" 
                                 />
                                 {formData.docFoto && <span className="absolute top-4 right-4 text-accent"><CheckCircle size={20} /></span>}
@@ -417,13 +473,9 @@ const CadastroMontador = () => {
                                 <p className="text-xs text-white/40 mb-4">Frente do RG ou CNH</p>
                                 <input 
                                     type="file" 
-                                    accept="image/*,.pdf"
-                                    onChange={async (e) => {
-                                        if (e.target.files[0]) {
-                                            const base64 = await toBase64(e.target.files[0]);
-                                            setFormData(prev => ({...prev, docRg: base64}));
-                                        }
-                                    }}
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={(e) => handleDocUpload('docRg', e.target.files[0])}
                                     className="block w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer" 
                                 />
                                 {formData.docRg && <span className="absolute top-4 right-4 text-accent"><CheckCircle size={20} /></span>}
@@ -434,13 +486,9 @@ const CadastroMontador = () => {
                                 <p className="text-xs text-white/40 mb-4">Verso do RG ou CNH</p>
                                 <input 
                                     type="file" 
-                                    accept="image/*,.pdf"
-                                    onChange={async (e) => {
-                                        if (e.target.files[0]) {
-                                            const base64 = await toBase64(e.target.files[0]);
-                                            setFormData(prev => ({...prev, docCpf: base64}));
-                                        }
-                                    }}
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={(e) => handleDocUpload('docCpf', e.target.files[0])}
                                     className="block w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer" 
                                 />
                                 {formData.docCpf && <span className="absolute top-4 right-4 text-accent"><CheckCircle size={20} /></span>}
@@ -451,13 +499,9 @@ const CadastroMontador = () => {
                                 <p className="text-xs text-white/40 mb-4">Água, luz, ou internet recente.</p>
                                 <input 
                                     type="file" 
-                                    accept="image/*,.pdf"
-                                    onChange={async (e) => {
-                                        if (e.target.files[0]) {
-                                            const base64 = await toBase64(e.target.files[0]);
-                                            setFormData(prev => ({...prev, docComprovante: base64}));
-                                        }
-                                    }}
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={(e) => handleDocUpload('docComprovante', e.target.files[0])}
                                     className="block w-full text-sm text-white/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-accent/10 file:text-accent hover:file:bg-accent/20 cursor-pointer" 
                                 />
                                 {formData.docComprovante && <span className="absolute top-4 right-4 text-accent"><CheckCircle size={20} /></span>}

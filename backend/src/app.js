@@ -49,8 +49,10 @@ app.use(cors({
     credentials: true
 }));
 app.use(morgan('dev'));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+const bodyLimitMb = parseInt(process.env.MAX_BODY_MB || '25', 10);
+const bodyLimit = `${Number.isFinite(bodyLimitMb) ? bodyLimitMb : 25}mb`;
+app.use(express.json({ limit: bodyLimit }));
+app.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 app.use(cookieParser());
 
 // Rate limit global da API (valores seguros e conservadores)
@@ -135,6 +137,9 @@ app.use((req, res, next) => {
 
 // Tratamento de erros global
 app.use((err, req, res, next) => {
+    if (err.type === 'entity.too.large') {
+        return res.status(413).json({ error: 'Arquivos muito grandes. Envie fotos menores e tente novamente.' });
+    }
     console.error('❌ Error:', err.message);
     
     // Zod validation errors
