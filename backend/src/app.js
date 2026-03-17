@@ -25,7 +25,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            connectSrc: ["'self'", "https://*.googleapis.com", "https://*.gstatic.com", "https://api.dicebear.com"],
+            connectSrc: ["'self'", "https://*.googleapis.com", "https://*.gstatic.com", "https://api.dicebear.com", "https://*.unsplash.com", "https://images.unsplash.com", "https://*.tile.openstreetmap.org"],
             fontSrc: ["'self'", "https://*.gstatic.com", "data:"],
             imgSrc: ["'self'", "data:", "blob:", "https://*.unsplash.com", "https://api.dicebear.com", "https://images.unsplash.com", "https://*.tile.openstreetmap.org", "https://raw.githubusercontent.com", "https://cdnjs.cloudflare.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://*.googleapis.com"],
