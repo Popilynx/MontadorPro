@@ -6,57 +6,55 @@ const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
 const smtpTransport = hasSmtp ? nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number.isFinite(smtpPort) ? smtpPort : 587,
-  secure: (process.env.SMTP_SECURE || '').toLowerCase() === 'true' || smtpPort === 465,
+  secure: (process.env.SMTP_SECURE || '').toLowerCase() === 'true',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   },
-  connectionTimeout: 20000, // 20 segundos
-  greetingTimeout: 20000,
-  socketTimeout: 30000
+  connectionTimeout: 15000, 
+  greetingTimeout: 15000,
+  socketTimeout: 30000,
+  tls: {
+    rejectUnauthorized: false
+  }
 }) : null;
 
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : { emails: { send: () => Promise.resolve() } };
-
-const FROM = process.env.SMTP_FROM || process.env.RESEND_FROM || 'NF Móveis <onboarding@resend.dev>';
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const FROM = process.env.SMTP_FROM || process.env.RESEND_FROM || 'Montador PRO <onboarding@resend.dev>';
 
 async function sendEmail({ to, subject, html }) {
+  let lastError = null;
+
+  // 1. Tentar via SMTP (Brevo) se configurado
   if (hasSmtp && smtpTransport) {
     try {
-      const info = await smtpTransport.sendMail({
-        from: FROM,
-        to,
-        subject,
-        html
-      });
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[email] SMTP sent', { messageId: info?.messageId, to, subject });
-      }
+      const info = await smtpTransport.sendMail({ from: FROM, to, subject, html });
+      console.log('[email] SMTP sent successfully');
       return info;
     } catch (err) {
-      console.error('[email] SMTP failed', err?.message || err);
-      throw err;
+      lastError = err;
+      console.error('[email] SMTP failed, trying fallback if available:', err?.message || err);
+      // Não joga erro aqui, tenta o próximo
     }
   }
-  if (process.env.RESEND_API_KEY) {
+
+  // 2. Tentar via Resend se configurado (Fallback)
+  if (process.env.RESEND_API_KEY && resend) {
     try {
       const recipients = Array.isArray(to) ? to : [to];
-      const result = await resend.emails.send({
-        from: FROM,
-        to: recipients,
-        subject,
-        html
-      });
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('[email] Resend sent', { to, subject });
-      }
+      const result = await resend.emails.send({ from: FROM, to: recipients, subject, html });
+      console.log('[email] Resend (fallback) sent successfully');
       return result;
     } catch (err) {
-      console.error('[email] Resend failed', err?.message || err);
-      throw err;
+      console.error('[email] Resend fallback failed:', err?.message || err);
+      lastError = err;
     }
   }
-  console.warn('[email] No provider configured (SMTP/Resend).');
+
+  // Se chegou aqui e tem erro, joga o último erro
+  if (lastError) throw lastError;
+
+  console.warn('[email] No provider configured or all failed.');
   return null;
 }
 
