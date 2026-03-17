@@ -13,7 +13,7 @@ process.on('unhandledRejection', (reason, promise) => {
     process.exit(1);
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Escutar em 0.0.0.0 é crucial para Railway/Docker
 app.listen(PORT, '0.0.0.0', () => {
