@@ -82,7 +82,7 @@ const Settings = () => {
 
     const handleClearCache = () => {
         if (window.confirm('Isso irá limpar dados temporários do app. Continuar?')) {
-            const keysToKeep = ['montador', 'token', 'config_notifications', 'config_vibration', 'config_theme']; 
+            const keysToKeep = ['montador', 'accessToken', 'config_notifications', 'config_vibration', 'config_theme', 'app_cache_version']; 
             Object.keys(localStorage).forEach(key => {
                 if (!keysToKeep.includes(key)) localStorage.removeItem(key);
             });

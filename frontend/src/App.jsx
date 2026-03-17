@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import api from './api/api';
+import { initCacheMigration } from './utils/cache';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -25,6 +26,7 @@ const AdminRoute = ({ children }) => {
 function App() {
   // Sincronização silenciosa do perfil ao carregar o app
   useEffect(() => {
+    initCacheMigration('1.1');
     const syncProfile = async () => {
       const token = localStorage.getItem('accessToken');
       if (token) {
