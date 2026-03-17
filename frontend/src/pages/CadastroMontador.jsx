@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, MapPin, User, Briefcase, FileText, ArrowRight, ArrowLeft, Loader2, Phone, Mail, CreditCard, Lock } from 'lucide-react';
+import { CheckCircle, MapPin, User, Briefcase, FileText, ArrowRight, ArrowLeft, Loader2, Phone, Mail, CreditCard, Lock, ChevronDown } from 'lucide-react';
 import api from '../api/api';
 
 const MAX_DOC_MB = 3;
@@ -385,13 +385,46 @@ const CadastroMontador = () => {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-white/70">Estado</label>
-                                <select name="estado" value={formData.estado} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none appearance-none">
-                                    <option value="GO">Goiás (GO)</option>
-                                    <option value="DF">Distrito Federal (DF)</option>
-                                    <option value="SP">São Paulo (SP)</option>
-                                    <option value="MG">Minas Gerais (MG)</option>
-                                    <option value="RJ">Rio de Janeiro (RJ)</option>
-                                </select>
+                                <div className="relative">
+                                    <select 
+                                        name="estado" 
+                                        value={formData.estado} 
+                                        onChange={handleChange} 
+                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none appearance-none"
+                                    >
+                                        <option value="" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Selecione...</option>
+                                        <option value="AC" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Acre (AC)</option>
+                                        <option value="AL" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Alagoas (AL)</option>
+                                        <option value="AP" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Amapá (AP)</option>
+                                        <option value="AM" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Amazonas (AM)</option>
+                                        <option value="BA" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Bahia (BA)</option>
+                                        <option value="CE" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Ceará (CE)</option>
+                                        <option value="DF" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Distrito Federal (DF)</option>
+                                        <option value="ES" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Espírito Santo (ES)</option>
+                                        <option value="GO" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Goiás (GO)</option>
+                                        <option value="MA" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Maranhão (MA)</option>
+                                        <option value="MT" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Mato Grosso (MT)</option>
+                                        <option value="MS" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Mato Grosso do Sul (MS)</option>
+                                        <option value="MG" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Minas Gerais (MG)</option>
+                                        <option value="PA" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Pará (PA)</option>
+                                        <option value="PB" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Paraíba (PB)</option>
+                                        <option value="PR" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Paraná (PR)</option>
+                                        <option value="PE" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Pernambuco (PE)</option>
+                                        <option value="PI" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Piauí (PI)</option>
+                                        <option value="RJ" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Rio de Janeiro (RJ)</option>
+                                        <option value="RN" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Rio Grande do Norte (RN)</option>
+                                        <option value="RS" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Rio Grande do Sul (RS)</option>
+                                        <option value="RO" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Rondônia (RO)</option>
+                                        <option value="RR" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Roraima (RR)</option>
+                                        <option value="SC" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Santa Catarina (SC)</option>
+                                        <option value="SP" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>São Paulo (SP)</option>
+                                        <option value="SE" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Sergipe (SE)</option>
+                                        <option value="TO" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Tocantins (TO)</option>
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40">
+                                        <ChevronDown size={18} />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -427,27 +460,47 @@ const CadastroMontador = () => {
                                 </div>
                             </div>
 
-                            {/* Anos XP e CNPJ */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-white/70">Tempo de Experiência</label>
-                                    <select name="anosExperiencia" value={formData.anosExperiencia} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent appearance-none">
-                                        <option value="">Selecione...</option>
-                                        <option value="menos_1">Menos de 1 ano</option>
-                                        <option value="1_a_3">1 a 3 anos</option>
-                                        <option value="3_a_5">3 a 5 anos</option>
-                                        <option value="mais_5">Mais de 5 anos</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select 
+                                            name="anosExperiencia" 
+                                            value={formData.anosExperiencia} 
+                                            onChange={handleChange} 
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none appearance-none"
+                                        >
+                                            <option value="" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Selecione...</option>
+                                            <option value="menos_1" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Menos de 1 ano</option>
+                                            <option value="1_a_3" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>1 a 3 anos</option>
+                                            <option value="3_a_5" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>3 a 5 anos</option>
+                                            <option value="mais_5" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Mais de 5 anos</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40">
+                                            <ChevronDown size={18} />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-white/70">Possui CNPJ? (MEI)</label>
-                                    <select name="cnpjStatus" value={formData.cnpjStatus} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent appearance-none">
-                                        <option value="">Selecione...</option>
-                                        <option value="sim">Sim, possuo CNPJ</option>
-                                        <option value="nao">Não, atuo como Pessoa Física</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select 
+                                            name="cnpjStatus" 
+                                            value={formData.cnpjStatus} 
+                                            onChange={handleChange} 
+                                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none appearance-none"
+                                        >
+                                            <option value="" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Selecione...</option>
+                                            <option value="sim" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Sim, possuo CNPJ</option>
+                                            <option value="nao" className="bg-[#1a1a1a] text-white" style={{ backgroundColor: '#1a1a1a' }}>Não, atuo como Pessoa Física</option>
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/40">
+                                            <ChevronDown size={18} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+
                             
                             {/* Especialidades */}
                             <div className="space-y-4">

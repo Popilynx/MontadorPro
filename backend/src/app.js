@@ -59,7 +59,7 @@ app.use(cookieParser());
 // Rate limit global da API (valores seguros e conservadores)
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: parseInt(process.env.RATE_LIMIT_MAX || '300', 10),
+    max: parseInt(process.env.RATE_LIMIT_MAX || '1000', 10),
     message: { error: 'Muitas requisições. Tente novamente em alguns minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
