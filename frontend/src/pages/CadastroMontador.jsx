@@ -131,6 +131,29 @@ const CadastroMontador = () => {
             return;
         }
 
+        if (name === 'cpf') {
+            let val = value.replace(/\D/g, '');
+            if (val.length > 11) val = val.slice(0, 11);
+            val = val.replace(/(\d{3})(\d)/, '$1.$2');
+            val = val.replace(/(\d{3})(\d)/, '$1.$2');
+            val = val.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            setFormData(prev => ({ ...prev, [name]: val }));
+            return;
+        }
+
+        if (name === 'telefone') {
+            let val = value.replace(/\D/g, '');
+            if (val.length > 11) val = val.slice(0, 11);
+            if (val.length > 2) {
+                val = `(${val.substring(0, 2)}) ${val.substring(2)}`;
+            }
+            if (val.length > 10) {
+                val = `${val.substring(0, 10)}-${val.substring(10)}`;
+            }
+            setFormData(prev => ({ ...prev, [name]: val }));
+            return;
+        }
+
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
@@ -181,7 +204,7 @@ const CadastroMontador = () => {
         }
     };
 
-    const isStep1Valid = () => formData.nome && formData.cpf && formData.telefone && formData.senha && formData.cidade;
+    const isStep1Valid = () => formData.nome && formData.cpf && formData.telefone && formData.senha && formData.email && formData.cidade;
     const isStep2Valid = () => formData.nivelExperiencia && formData.anosExperiencia;
     const isStep4Valid = () => formData.aceitoLGPD && formData.aceitoConduta;
 
@@ -320,10 +343,10 @@ const CadastroMontador = () => {
                                 <label className="text-sm font-medium text-white/70">Telefone / WhatsApp *</label>
                                 <input type="text" name="telefone" value={formData.telefone} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none" placeholder="(00) 90000-0000" />
                             </div>
-                            <div className="space-y-2 md:col-span-2">
-                                <label className="text-sm font-medium text-white/70">E-mail</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none" placeholder="seu@email.com" />
-                            </div>
+            <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-medium text-white/70">E-mail *</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none" placeholder="seu@email.com" />
+            </div>
                             <div className="space-y-2 md:col-span-2">
                                 <label className="text-sm font-medium text-white/70">Senha de Acesso *</label>
                                 <input type="password" name="senha" value={formData.senha} onChange={handleChange} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-accent outline-none" placeholder="Crie uma senha forte" />

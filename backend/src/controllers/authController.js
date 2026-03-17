@@ -1,4 +1,5 @@
 const prisma = require('../config/db');
+const crypto = require('crypto');
 const {
     comparePassword,
     hashPassword,
@@ -6,6 +7,7 @@ const {
     generateRefreshToken,
     verifyToken
 } = require('../utils/auth');
+const { emailAtivacao } = require('../utils/email');
 
 const register = async (req, res) => {
     const { 
@@ -19,8 +21,8 @@ const register = async (req, res) => {
 
     const ipOrigem = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-    if (!nome || !telefone || !cpf || !senha) {
-        return res.status(400).json({ error: 'Nome, telefone, cpf e senha são obrigatórios.' });
+    if (!nome || !telefone || !cpf || !senha || !email) {
+        return res.status(400).json({ error: 'Nome, telefone, cpf, email e senha são obrigatórios.' });
     }
 
     const telefoneSanitizado = telefone.replace(/\D/g, '');
@@ -41,6 +43,13 @@ const register = async (req, res) => {
         }
 
         const senhaHash = await hashPassword(senha);
+
+        let activationToken = null;
+        let activationTokenHash = null;
+        if (email) {
+            activationToken = crypto.randomBytes(32).toString('hex');
+            activationTokenHash = crypto.createHash('sha256').update(activationToken).digest('hex');
+        }
         
         let lat = latitude ? parseFloat(latitude) : null;
         let lng = longitude ? parseFloat(longitude) : null;
@@ -94,12 +103,23 @@ const register = async (req, res) => {
                 docFoto,
                 docAntecedente,
                 docPortfolio: docPortfolio || [],
+                codigoVerificacao: activationTokenHash || null,
+                emailVerificado: false,
                 status: 'pendente' // Padrão é pendente para aprovação admin
             }
         });
 
-        // Opcional: Enviar e-mail de verificação aqui
-        // if (email) await sendVerificationEmail(...)
+        if (email && activationToken) {
+            const appUrl = process.env.APP_URL || req.headers.origin || 'http://localhost:5173';
+            const apiUrl = process.env.API_URL || `${req.protocol}://${req.get('host')}`;
+            const linkAtivacao = `${apiUrl}/api/v1/auth/verify?token=${activationToken}&id=${novoMontador.id}`;
+            const linkPwa = appUrl;
+            try {
+                await emailAtivacao({ para: email, nomeMontador: nome, linkAtivacao, linkPwa });
+            } catch (mailError) {
+                console.error('Erro ao enviar email de ativação:', mailError);
+            }
+        }
 
         res.status(201).json({ 
             message: 'Cadastro recebido com sucesso. Aguarde aprovação.',
@@ -109,6 +129,62 @@ const register = async (req, res) => {
     } catch (error) {
         console.error('Erro no cadastro:', error);
         return res.status(500).json({ error: 'Erro interno ao tentar cadastrar.' });
+    }
+};
+
+const verifyEmail = async (req, res) => {
+    const { token, id } = req.query;
+    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+
+    if (!token || !id) {
+        return res.status(400).send('Link de ativação inválido.');
+    }
+
+    const montadorId = parseInt(id, 10);
+    if (!Number.isFinite(montadorId)) {
+        return res.status(400).send('Link de ativação inválido.');
+    }
+
+    try {
+        const montador = await prisma.montador.findUnique({ where: { id: montadorId } });
+
+        if (!montador) {
+            return res.status(404).send('Cadastro não encontrado.');
+        }
+
+        if (montador.emailVerificado) {
+            return res.send(`
+                <div style="font-family:sans-serif;max-width:520px;margin:40px auto;text-align:center">
+                    <h2>Conta já ativada</h2>
+                    <p>Sua conta já estava ativa. Você pode abrir o app agora.</p>
+                    <a href="${appUrl}" style="display:inline-block;margin-top:12px;background:#0f766e;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700">Abrir PWA</a>
+                </div>
+            `);
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(String(token)).digest('hex');
+        if (montador.codigoVerificacao !== tokenHash) {
+            return res.status(400).send('Link de ativação inválido ou expirado.');
+        }
+
+        await prisma.montador.update({
+            where: { id: montadorId },
+            data: {
+                emailVerificado: true,
+                codigoVerificacao: null
+            }
+        });
+
+        return res.send(`
+            <div style="font-family:sans-serif;max-width:520px;margin:40px auto;text-align:center">
+                <h2>Conta ativada com sucesso!</h2>
+                <p>Sua conta foi ativada. Agora você já pode acessar o app.</p>
+                <a href="${appUrl}" style="display:inline-block;margin-top:12px;background:#2563eb;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700">Abrir PWA</a>
+            </div>
+        `);
+    } catch (error) {
+        console.error('Erro na verificação de e-mail:', error);
+        return res.status(500).send('Erro interno ao ativar conta.');
     }
 };
 
@@ -231,6 +307,7 @@ const logout = async (req, res) => {
 module.exports = {
     login,
     register,
+    verifyEmail,
     refresh,
     logout
 };
